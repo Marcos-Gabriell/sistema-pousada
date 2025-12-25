@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8"/>
+
+    <style>
+        /* CONFIGURAÇÃO DA PÁGINA */
+        /* Margens Padrão: Apenas o espaço necessário para o conteúdo e o header fixo */
+        @page { size: A4; margin: 18mm 14mm 18mm 14mm; }
+        * { box-sizing: border-box; }
+
+        :root{
+            /* Altura reservada pro RAID fixo (header+meta) */
+            --header-space: 74mm;
+            /* ZERADO: Não reservamos padding para o footer no body */
+            --footer-space: 0mm;
+        }
+
+        body{
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            font-weight: 400;
+            color:#111;
+            margin:0;
+            padding:0;
+            line-height:1.35;
+
+            /* ESSENCIAL: padding-top reserva o espaço para o cabeçalho fixo */
+            padding-top: var(--header-space);
+            padding-bottom: var(--footer-space);
+        }
+
+        .container{ width:100%; }
+        .avoid-break{ page-break-inside: avoid; }
+        .muted{ color:#555; }
+        .center{ text-align:center; }
+        .right{ text-align:right; }
+
+        /* ========================================================
+           HEADER FIXO (RAID - Repete em todas as páginas)
+           ======================================================== */
+        .pdf-header{
+            position: fixed;
+            top: 18mm;
+            left: 14mm;
+            right: 14mm;
+            background:#fff;
+            z-index: 10;
+        }
+
+        /* ===== RAID (Layout) ===== */
+        .header{
+            border-bottom:2px solid #111;
+            padding-bottom:10px;
+            margin-bottom:12px;
+            display:table;
+            width:100%;
+        }
+        .header-left,.header-right{ display:table-cell; vertical-align:middle; }
+        .header-left{ width:65%; }
+        .header-right{ width:35%; text-align:right; }
+
+        .brand{ display:table; width:100%; }
+        .brand-logo,.brand-text{ display:table-cell; vertical-align:middle; }
+        .brand-logo{ width:78px; }
+
+        .logo{
+            width:64px;
+            height:64px;
+            border-radius:14px;
+            border:1px solid #e5e7eb;
+            display:block;
+        }
+
+        .brand-title{
+            font-size:14px;
+            font-weight:600;
+            margin:0;
+            line-height:1.2;
+        }
+        .brand-subtitle{
+            font-size:11px;
+            color:#555;
+            margin:2px 0 0;
+        }
+
+        .report-title{
+            font-size:18px;
+            font-weight:600;
+            margin:0;
+            line-height:1.2;
+        }
+        .report-chip{
+            display:inline-block;
+            margin-top:6px;
+            padding:3px 10px;
+            font-size:10px;
+            border:1px solid #e5e7eb;
+            border-radius:999px;
+            background:#f8fafc;
+            color:#333;
+        }
+
+        .meta{
+            margin:10px 0 0;
+            padding:12px;
+            border:1px solid #e5e7eb;
+            border-radius:12px;
+            background:#fafafa;
+        }
+        .meta-row{ display:table; width:100%; table-layout:fixed; }
+        .meta-item{ display:table-cell; width:33.33%; padding-right:10px; }
+
+        .meta-label{
+            font-size:10px;
+            text-transform:uppercase;
+            color:#666;
+            margin:0 0 4px;
+            letter-spacing:.3px;
+            font-weight:500;
+        }
+        .meta-value{
+            font-size:12px;
+            font-weight:600;
+            margin:0;
+        }
+        .meta-muted{
+            font-size:11px;
+            color:#555;
+            margin:4px 0 0;
+        }
+
+        /* ===== Sections/KPIs ===== */
+        .section-title{
+            font-size:13px;
+            font-weight:600;
+            margin:14px 0 8px;
+            padding-left:10px;
+            border-left:3px solid #111;
+        }
+
+        .kpi-grid{
+            width:100%;
+            display:table;
+            table-layout:fixed;
+            border-spacing:10px;
+            margin:0 0 10px;
+        }
+        .kpi{
+            display:table-cell;
+            vertical-align:top;
+            padding:12px;
+            border:1px solid #e5e7eb;
+            border-radius:12px;
+            background:#fff;
+            page-break-inside: avoid;
+        }
+        .kpi-title{
+            font-size:10px;
+            text-transform:uppercase;
+            color:#666;
+            margin:0 0 6px;
+            letter-spacing:.3px;
+            font-weight:500;
+        }
+        .kpi-value{
+            font-size:14px;
+            font-weight:600;
+            margin:0;
+            line-height:1.1;
+        }
+        .kpi-hint{
+            font-size:10px;
+            color:#666;
+            margin-top:6px;
+            line-height:1.25;
+        }
+
+        /* ===== TABLE (Quebra e Repetição) ===== */
+        .table-wrap{
+            margin-top:8px;
+            margin-bottom: 10px;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            border:1px solid #d1d5db;
+            table-layout:fixed;
+        }
+
+        /* REPETIÇÃO: repetir cabeçalho da tabela quando quebrar página */
+        thead{ display: table-header-group; }
+        tfoot{ display: table-footer-group; }
+
+        th,td{
+            border-bottom:1px solid #e5e7eb;
+            padding:9px 10px;
+            font-size:11px;
+            vertical-align:top;
+            word-break: break-word;
+        }
+
+        th{
+            background:#e5e7eb;
+            color:#111;
+            text-align:left;
+            font-weight:600;
+            text-transform:uppercase;
+            letter-spacing:.25px;
+            font-size:10px;
+        }
+
+        tbody tr:nth-child(even) td{ background:#f8fafc; }
+
+        /* REFORÇO: evita quebrar uma linha no meio (quando possível) */
+        tr{ page-break-inside: avoid; }
+
+        /* Larguras (geral) */
+        .col-date{ width:14%; }
+        .col-desc{ width:34%; padding-left:14px; }
+        .col-type{ width:10%; }
+        .col-value{ width:10%; }
+        .col-author{ width:32%; }
+
+        td.col-date, td.col-value{ white-space:nowrap; }
+        td.col-type{ white-space:nowrap; }
+
+        td.col-desc{
+            white-space: normal;
+            overflow-wrap: anywhere;
+            line-height:1.25;
+        }
+        td.col-author{
+            overflow-wrap:anywhere;
+            line-height:1.2;
+        }
+
+        .author-main{ font-size:10px; font-weight:600; color:#111; }
+        .author-id{ font-size:10px; color:#555; margin-top:2px; }
+
+        /* ========================================================
+           FOOTER (FOITE - Aparece APENAS NO FINAL)
+           ======================================================== */
+        .pdf-footer{
+            /* NÃO é fixo. Fluxo normal do documento. */
+            margin-top: 20px;
+            padding-top:6px;
+            border-top:1px solid #e5e7eb;
+            font-size:10px;
+            font-weight:400;
+            color:#666;
+            overflow: hidden;
+        }
+        .footer-left{ float:left; }
+        .footer-center{ float:left; margin-left:18px; }
+        .footer-right{ float:right; }
+        .sep{ margin:0 6px; color:#999; }
+        .clearfix::after{ content:""; display:block; clear:both; }
+
+        .page-number:before{ content: counter(page); }
+        .page-count:before{ content: counter(pages); }
+    </style>
+</head>
+
+<body>
+
+<div class="pdf-header"
+     th:replace="pdf/fragments/raid :: raid(
+          'Relatório Geral',
+          'Resumo financeiro e indicadores do sistema',
+          ${r},
+          ${pousadaNome},
+          ${pousadaSubtitulo}
+       )"></div>
+
+<div class="container">
+
+    <div class="section-title">Indicadores principais</div>
+
+    <div class="kpi-grid avoid-break">
+        <div class="kpi">
+            <p class="kpi-title">Hospedagens ativas</p>
+            <p class="kpi-value" th:text="${r.hospedagensAtivas != null ? r.hospedagensAtivas : 0}">0</p>
+            <div class="kpi-hint">Status atual (ativas agora).</div>
+        </div>
+        <div class="kpi">
+            <p class="kpi-title">Reservas pendentes</p>
+            <p class="kpi-value" th:text="${r.reservasPendentes != null ? r.reservasPendentes : 0}">0</p>
+            <div class="kpi-hint">Pendentes no período selecionado.</div>
+        </div>
+        <div class="kpi">
+            <p class="kpi-title">Usuários ativos</p>
+            <p class="kpi-value" th:text="${r.usuariosAtivos != null ? r.usuariosAtivos : 0}">0</p>
+            <div class="kpi-hint">Total de usuários ativos (geral).</div>
+        </div>
+        <div class="kpi">
+            <p class="kpi-title">Saldo (R$)</p>
+            <p class="kpi-value">
+                <span th:text="${r.saldo != null ? #numbers.formatDecimal(r.saldo,1,'POINT',2,'COMMA') : '0,00'}">0,00</span>
+            </p>
+            <div class="kpi-hint">Entradas − Saídas (no período).</div>
+        </div>
+    </div>
+
+    <div class="kpi-grid avoid-break">
+        <div class="kpi">
+            <p class="kpi-title">Entradas (R$)</p>
+            <p class="kpi-value">
+                <span th:text="${r.entradas != null ? #numbers.formatDecimal(r.entradas,1,'POINT',2,'COMMA') : '0,00'}">0,00</span>
+            </p>
+            <div class="kpi-hint">Total de recebimentos no período.</div>
+        </div>
+
+        <div class="kpi">
+            <p class="kpi-title">Saídas (R$)</p>
+            <p class="kpi-value">
+                <span th:text="${r.saidas != null ? #numbers.formatDecimal(r.saidas,1,'POINT',2,'COMMA') : '0,00'}">0,00</span>
+            </p>
+            <div class="kpi-hint">Total de despesas no período.</div>
+        </div>
+
+        <div class="kpi">
+            <p class="kpi-title">Quartos disponíveis</p>
+            <p class="kpi-value" th:text="${r.quartosDisponiveis != null ? r.quartosDisponiveis : 0}">0</p>
+            <div class="kpi-hint">Status atual.</div>
+        </div>
+
+        <div class="kpi">
+            <p class="kpi-title">Ocupados / Manutenção</p>
+            <p class="kpi-value">
+                <span th:text="${r.quartosOcupados != null ? r.quartosOcupados : 0}">0</span>
+                <span class="muted">/</span>
+                <span th:text="${r.quartosManutencao != null ? r.quartosManutencao : 0}">0</span>
+            </p>
+            <div class="kpi-hint">Status atual.</div>
+        </div>
+    </div>
+
+
+    <div class="section-title">Últimas movimentações</div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th class="col-date">Data</th>
+                <th class="col-desc">Descrição</th>
+                <th class="col-type">Tipo</th>
+                <th class="col-value right">Valor (R$)</th>
+                <th class="col-author">Autor</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="m : ${r.ultimasMovimentacoes}">
+                <td class="col-date"
+                    th:text="${m['data'] != null ? #temporals.format(m['data'], 'dd/MM/yyyy HH:mm') : ''}">
+                    14/12/2025 12:00
+                </td>
+
+                <td class="col-desc"
+                    th:with="d=${m['descricao'] != null ? m['descricao'].toString() : ''},
+                       base=${#strings.length(d) > 20 ? #strings.substring(d,0,20) : d}"
+                    th:text="${base + '...'}">
+                    Descrição...
+                </td>
+
+                <td class="col-type" th:text="${m['tipo'] != null ? m['tipo'] : ''}">ENTRADA</td>
+
+                <td class="col-value right">
+                    <span th:text="${m['valor'] != null ? #numbers.formatDecimal(m['valor'],1,'POINT',2,'COMMA') : '0,00'}">0,00</span>
+                </td>
+
+                <td class="col-author"
+                    th:with="autorRaw=${m['autor'] != null ? m['autor'].toString() : ''},
+                       temPipe=${#strings.contains(autorRaw,'|')},
+                       parteUser=${temPipe ? #strings.trim(#strings.substringBefore(autorRaw,'|')) : #strings.trim(autorRaw)},
+                       parteId=${temPipe ? #strings.trim(#strings.substringAfter(autorRaw,'|')) : ''}"
+                    th:utext="${temPipe
+                ? '<div class=&quot;author-main&quot;>' + #strings.escapeXml(parteUser) + '</div>'
+                  + '<div class=&quot;author-id&quot;>ID: ' + #strings.escapeXml(parteId) + '</div>'
+                : '<div class=&quot;author-main&quot;>' + #strings.escapeXml(parteUser) + '</div>'}">
+                    <div class="author-main">dev@pousadadobrejo2025</div>
+                    <div class="author-id">ID: 1</div>
+                </td>
+            </tr>
+
+            <tr th:if="${r.ultimasMovimentacoes == null or #lists.isEmpty(r.ultimasMovimentacoes)}">
+                <td colspan="5" class="center muted" style="padding:12px;">
+                    Sem movimentações no período.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<div class="pdf-footer clearfix"
+     th:replace="pdf/fragments/footer :: footer(${pousadaNome}, ${r.geradoEm}, ${r.geradoPor})">
+</div>
+
+</body>
+</html>

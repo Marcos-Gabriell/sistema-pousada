@@ -1,0 +1,1467 @@
+<div class="p-4 sm:p-6 w-full max-w-5xl 2xl:max-w-6xl mx-auto flex flex-col items-center text-[var(--text-color)]">
+  <div class="flex flex-col gap-3 items-center w-full sm:flex-row sm:items-center sm:justify-between mb-8 mt-8 sm:mt-0">
+    <div class="text-center sm:text-left w-full sm:w-auto">
+      <h1 class="text-2xl sm:text-3xl font-bold text-[var(--text-color)]">Usuários</h1>
+      <p class="text-base mt-1 hidden sm:block text-[var(--text-dim)]">Gerencie o acesso ao sistema</p>
+    </div>
+
+    <button
+      *ngIf="podeCriar() && !carregandoLista"
+      (click)="abrirNovo()"
+      type="button"
+      class="flex items-center justify-center gap-2 font-semibold
+             px-3 py-2 text-base rounded-xl shadow transition sm:px-6 sm:py-3 sm:text-lg
+             bg-[var(--accent-yellow)] text-[#111827] hover:brightness-105"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Novo usuário
+    </button>
+  </div>
+  <div class="w-full flex flex-col sm:flex-row sm:items-end sm:justify-start gap-2 sm:gap-3 mb-6">
+    <input
+      type="text"
+      [(ngModel)]="filtroBusca"
+      (ngModelChange)="buscar()"
+      placeholder="Nome, e-mail ou usuário"
+      class="w-full sm:w-[40%] h-10 px-3 rounded-lg text-sm sm:text-base
+             focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]
+             bg-[var(--bg-card)] text-[var(--text-color)]
+             border border-[var(--border-color)]"
+    />
+
+    <select
+      [(ngModel)]="filtroStatus"
+      (ngModelChange)="buscar()"
+      class="w-full sm:w-28 h-10 px-3 rounded-lg text-sm sm:text-base
+             appearance-none
+             focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]
+             bg-[var(--bg-card)] text-[var(--text-color)]
+             border border-[var(--border-color)]"
+      aria-label="Filtro de Status">
+      <option value="">Status</option>
+      <option value="ATIVOS">Ativo</option>
+      <option value="INATIVOS">Inativo</option>
+    </select>
+
+    <select
+      [(ngModel)]="filtroPerfil"
+      (ngModelChange)="buscar()"
+      class="w-full sm:w-40 h-10 px-3 rounded-lg text-sm sm:text-base
+             appearance-none
+             focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]
+             bg-[var(--bg-card)] text-[var(--text-color)]
+             border border-[var(--border-color)]"
+      aria-label="Filtro de Perfil">
+      <option value="">Perfil</option>
+      <option *ngFor="let p of perfisDisponiveis" [value]="p">{{ p }}</option>
+    </select>
+  </div>
+  <div class="w-full mb-4 text-sm text-[var(--text-dim)]">
+    Exibindo
+    <strong class="text-[var(--text-color)]">{{ contagemExibida }}</strong>
+    — Ativos
+    <strong class="text-green-600">{{ contagemAtivos }}</strong>
+    — Inativos
+    <strong class="text-[var(--text-color)]">{{ contagemInativos }}</strong>
+  </div>
+  <div *ngIf="carregandoLista" class="hidden sm:flex w-full rounded-2xl shadow p-6 bg-[var(--bg-card)] border border-[var(--border-color)] justify-center">
+    <div class="flex flex-col items-center justify-center gap-3" aria-live="polite" aria-busy="true">
+      <div class="w-8 h-8 flex items-center justify-center">
+        <span class="btn-spinner-dark" aria-hidden="true" style="--spinner-size: 28px; --spinner-border: 3px;"></span>
+      </div>
+      <p class="text-sm font-semibold text-[var(--text-dim)]">Carregando usuários...</p>
+    </div>
+  </div>
+  <div
+    *ngIf="!carregandoLista"
+    class="hidden sm:block rounded-2xl shadow p-2 sm:p-4 w-full overflow-x-auto min-h-[120px]
+           bg-[var(--bg-card)]
+           text-[var(--text-color)]
+           border border-[var(--border-color)]"
+  >
+    <table class="w-full text-xs sm:text-base" role="table" aria-label="Tabela de usuários">
+      <thead>
+        <tr class="uppercase text-[11px] sm:text-xs text-[var(--text-dim)] border-b-2 border-[var(--border-color)]">
+          <th class="py-2 px-3 text-left">NOME</th>
+          <th class="py-2 px-3 text-left hidden sm:table-cell">USUÁRIO</th>
+          <th class="py-2 px-3 text-center hidden sm:table-cell">TELEFONE</th>
+          <th class="py-2 px-3 text-center hidden sm:table-cell">PERFIL</th>
+          <th class="py-2 px-3 text-center hidden sm:table-cell">STATUS</th>
+          <th class="py-2 px-3 text-center">AÇÕES</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr
+          *ngFor="let u of usuarios"
+          class="transition
+                 odd:bg-[var(--bg-card)] even:bg-[color-mix(in_rgb(var(--bg-card)),_rgb(0_0_0/_5%))]
+                 hover:bg-[var(--table-row-hover)]"
+        >
+          <td class="py-3 px-4 font-bold text-left break-words align-middle text-[var(--text-color)]">
+            <div class="relative inline-flex items-center gap-2 pr-6">
+              <span class="block whitespace-pre-line">
+                {{ u.nome }}
+              </span>
+              <span
+                *ngIf="u.online"
+                class="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"
+                title="Online agora"
+                aria-label="Usuário online"
+              ></span>
+              <span
+                *ngIf="!u.ativo && hasDias(u)"
+                class="absolute -top-1.5 -right-3 flex items-center justify-center 
+                       min-w-[22px] h-[22px] p-1 bg-red-600 text-white text-xs 
+                       font-bold rounded-full shadow-lg border-2 border-[var(--bg-card)]
+                       pointer-events-none"
+              >
+                {{ getDias(u) }}
+              </span>
+            </div>
+          </td>
+          <td class="py-2 px-3 hidden sm:table-cell text-[var(--text-color)]">
+            {{ u.username || '—' }}
+          </td>
+          <td class="py-2 px-3 text-center hidden sm:table-cell text-[var(--text-color)]">
+            {{ u.numero ? formatarTelefonePadrao(somenteDigitos(u.numero)) : '—' }}
+          </td>
+          <td class="py-2 px-3 text-center hidden sm:table-cell text-[var(--text-color)]">
+            {{ u.role }}
+          </td>
+          <td class="py-2 px-3 text-center hidden sm:table-cell">
+            <span
+              *ngIf="u.ativo"
+              class="inline-flex items-center px-2 sm:px-3 py-1 rounded-full
+                     bg-green-100 text-green-800 text-xs sm:text-sm font-semibold"
+            >
+              <span class="w-2 h-2 rounded-full bg-green-500 mr-2 inline-block"></span>
+              Ativo
+            </span>
+
+            <span
+              *ngIf="!u.ativo"
+              class="inline-flex items-center px-2 sm:px-3 py-1 rounded-full
+                     bg-gray-300 text-gray-800 text-xs sm:text-sm font-semibold"
+            >
+              <span class="w-2 h-2 rounded-full bg-gray-500 mr-2 inline-block"></span>
+              Inativo
+            </span>
+          </td>
+          <td class="py-2 px-3 text-center">
+            <ng-container *ngIf="!(estaProcessandoAcao && usuarioEmProcessamentoId === u.id); else loadingAcaoRow">
+              <div class="flex flex-wrap gap-1 sm:gap-2 justify-center items-center">
+                <button
+                  class="inline-flex items-center justify-center w-8 h-8 rounded-full transition
+                         hover:bg-[var(--table-row-hover)] hover:ring-2 hover:ring-blue-500 focus:ring-blue-500 focus:outline-none focus:ring-offset-1"
+                  (click)="abrirDetalhes(u)"
+                  type="button"
+                  aria-label="Detalhes"
+                  title="Detalhes"
+                >
+                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-4M12 8h.01"/>
+                  </svg>
+                </button>
+
+                <ng-container *ngIf="podeEditar(u)">
+                  <button
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-full transition
+                           hover:bg-[var(--table-row-hover)] hover:ring-2 hover:ring-yellow-400 focus:ring-yellow-400 focus:outline-none focus:ring-offset-1"
+                    (click)="abrirEdicao(u)"
+                    type="button"
+                    aria-label="Editar"
+                    title="Editar"
+                  >
+                    <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round" stroke-linejoin="round"
+                        d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-full transition
+                           hover:bg-[var(--table-row-hover)] hover:ring-2 hover:ring-green-500 focus:ring-green-500 focus:outline-none focus:ring-offset-1"
+                    (click)="pedirConfirmacaoReset(u)"
+                    type="button"
+                    aria-label="Resetar senha"
+                    title="Resetar senha"
+                  >
+                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 17v-6m0 0V7m0 4h4m-4 0H8"/>
+                      <circle cx="12" cy="12" r="10"></circle>
+                    </svg>
+                  </button>
+                  <button
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-full transition
+                           hover:bg-[var(--table-row-hover)] hover:ring-2 hover:ring-yellow-400 focus:ring-yellow-400 focus:outline-none focus:ring-offset-1"
+                    (click)="pedirConfirmacaoStatus(u)"
+                    type="button"
+                    [title]="u.ativo ? 'Desativar' : 'Ativar'"
+                    [attr.aria-label]="u.ativo ? 'Desativar' : 'Ativar'"
+                  >
+                    <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582M20 20v-5h-.581M5.635 19.364A9 9 0 1119.364 5.636"/>
+                    </svg>
+                  </button>
+                  <button
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-full transition
+                           hover:bg-[var(--table-row-hover)] hover:ring-2 hover:ring-red-500 focus:ring-red-500 focus:outline-none focus:ring-offset-1"
+                    (click)="pedirConfirmacaoExcluir(u)"
+                    type="button"
+                    aria-label="Excluir"
+                    title="Excluir"
+                  >
+                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round" stroke-linejoin="round"
+                        d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 7V5a2 2 0 00-2-2H7a2 2 0 00-2 2v2"
+                      />
+                    </svg>
+                  </button>
+                </ng-container>
+              </div>
+            </ng-container>
+
+            <ng-template #loadingAcaoRow>
+              <div class="flex justify-center items-center h-8">
+                <span class="btn-spinner-dark" aria-hidden="true" style="--spinner-size: 18px; --spinner-border: 2.5px;"></span>
+              </div>
+            </ng-template>
+          </td>
+        </tr>
+        <tr *ngIf="!carregandoLista && usuarios.length === 0">
+          <td colspan="6" class="py-10 text-center text-base text-[var(--text-dim)]">
+            <svg class="mx-auto mb-2 w-10 h-10 text-[var(--border-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"></circle>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 15h4.5m-2.25-6v3"/>
+            </svg>
+            Nenhum usuário encontrado.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="sm:hidden w-full space-y-3 p-1">
+    <ng-container *ngIf="carregandoLista; else mobileContent">
+      <div class="py-10 text-center text-[var(--text-dim)]">
+        <div class="flex flex-col items-center justify-center gap-2" aria-live="polite" aria-busy="true">
+          <div class="relative flex items-center justify-center">
+            <span class="btn-spinner-dark" aria-hidden="true" style="--spinner-size: 28px; --spinner-border: 3px;"></span>
+          </div>
+          <p class="text-sm sm:text-base">Carregando usuários...</p>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #mobileContent>
+      <ng-container *ngIf="usuarios && usuarios.length > 0; else usersMobileEmpty">
+        <div
+          *ngFor="let u of usuarios"
+          class="relative rounded-xl shadow-sm p-3 border bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-color)]"
+        >
+          <div class="flex justify-between items-start mb-2">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <div class="text-lg font-bold truncate">
+                  {{ u.nome }}
+                </div>
+                <span
+                  *ngIf="u.online"
+                  class="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"
+                  title="Online agora"
+                  aria-label="Usuário online"
+                ></span>
+              </div>
+
+              <div class="text-sm text-[var(--text-dim)] truncate">{{ u.username || u.email || '—' }}</div>
+              <div class="text-sm mt-1 text-[var(--text-dim)]">{{ u.role }}</div>
+            </div>
+
+            <div class="text-right">
+              <span
+                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
+                [ngClass]="u.ativo ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700'"
+              >
+                {{ u.ativo ? 'Ativo' : 'Inativo' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="border-t border-dashed border-[var(--border-color)] pt-2 flex justify-center">
+            <div class="flex flex-wrap gap-1 justify-center items-center">
+              <ng-container *ngIf="!(estaProcessandoAcao && usuarioEmProcessamentoId === u.id); else userMobileLoading">
+                <button
+                  (click)="abrirDetalhes(u)"
+                  type="button"
+                  aria-label="Detalhes"
+                  title="Detalhes"
+                  class="inline-flex items-center justify-center w-8 h-8 rounded-full transition hover:bg-[var(--table-row-hover)] hover:ring-2 hover:ring-blue-500 focus:ring-blue-500 focus:outline-none focus:ring-offset-1"
+                >
+                  <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-4M12 8h.01" />
+                  </svg>
+                </button>
+
+                <ng-container *ngIf="podeEditar(u)">
+                  <button
+                    (click)="abrirEdicao(u)"
+                    type="button"
+                    aria-label="Editar"
+                    title="Editar"
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-full transition hover:bg-[var(--table-row-hover)] hover:ring-2 hover:ring-yellow-400 focus:ring-yellow-400 focus:outline-none focus:ring-offset-1"
+                  >
+                    <svg class="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z" />
+                    </svg>
+                  </button>
+
+                  <button
+                    (click)="pedirConfirmacaoReset(u)"
+                    type="button"
+                    aria-label="Resetar senha"
+                    title="Resetar senha"
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-full transition hover:bg-[var(--table-row-hover)] hover:ring-2 hover:ring-green-500 focus:ring-green-500 focus:outline-none focus:ring-offset-1"
+                  >
+                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 17v-6m0 0V7m0 4h4m-4 0H8"/>
+                      <circle cx="12" cy="12" r="10"></circle>
+                    </svg>
+                  </button>
+
+                  <button
+                    (click)="pedirConfirmacaoStatus(u)"
+                    type="button"
+                    [attr.title]="u.ativo ? 'Desativar' : 'Ativar'"
+                    [attr.aria-label]="u.ativo ? 'Desativar' : 'Ativar'"
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-full transition hover:bg-[var(--table-row-hover)] hover:ring-2 hover:ring-yellow-400 focus:ring-yellow-400 focus:outline-none focus:ring-offset-1"
+                  >
+                    <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582M20 20v-5h-.581M5.635 19.364A9 9 0 1119.364 5.636"/>
+                    </svg>
+                  </button>
+
+                  <button
+                    (click)="pedirConfirmacaoExcluir(u)"
+                    type="button"
+                    aria-label="Excluir"
+                    title="Excluir"
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-full transition hover:bg-[var(--table-row-hover)] hover:ring-2 hover:ring-red-500 focus:ring-red-500 focus:outline-none focus:ring-offset-1"
+                  >
+                    <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 7V5a2 2 0 00-2-2H7a2 2 0 00-2 2v2"/>
+                    </svg>
+                  </button>
+                </ng-container>
+              </ng-container>
+
+              <ng-template #userMobileLoading>
+                <div class="flex justify-center items-center w-8 h-8">
+                  <span class="btn-spinner-dark" aria-hidden="true" style="--spinner-size: 18px; --spinner-border: 2.5px;"></span>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-[var(--border-color)] text-sm pt-3 px-1 font-semibold text-[var(--text-color)]">
+          Total: {{ usuarios.length || 0 }} usuário(s)
+        </div>
+      </ng-container>
+    </ng-template>
+
+    <ng-template #usersMobileEmpty>
+      <div class="rounded-xl shadow-sm p-6 text-center border bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-color)]">
+        <svg class="w-12 h-12 mx-auto mb-3 text-[var(--border-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"></circle>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 15h4.5m-2.25-6v3" />
+        </svg>
+        <div class="font-semibold text-lg text-[var(--text-color)] mb-1">Nenhum usuário encontrado</div>
+        <div class="text-sm text-[var(--text-dim)] mb-4">Ajuste os filtros de pesquisa ou crie um novo usuário.</div>
+        <button
+          *ngIf="podeCriar()"
+          (click)="abrirNovo()"
+          type="button"
+          class="flex items-center justify-center gap-2 font-semibold px-4 py-2 text-sm rounded-lg shadow transition w-full max-w-xs mx-auto bg-[var(--accent-yellow)] hover:brightness-110 text-gray-900"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Novo usuário
+        </button>
+      </div>
+    </ng-template>
+  </div>
+  <div class="flex justify-center items-center mt-6 gap-4 w-full" *ngIf="totalPaginas > 1">
+    <button
+      (click)="irPara(pagina - 1)"
+      [disabled]="pagina === 1 || carregandoLista"
+      type="button"
+      class="px-4 py-2 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed
+             bg-[var(--bg-card)] text-[var(--text-color)]
+             border border-[var(--border-color)]
+             hover:bg-[var(--table-row-hover)]"
+    >
+      Anterior
+    </button>
+
+    <span class="font-semibold text-sm sm:text-base text-[var(--text-color)]">
+      Página {{ pagina }} de {{ totalPaginas }}
+    </span>
+
+    <button
+      (click)="irPara(pagina + 1)"
+      [disabled]="pagina === totalPaginas || carregandoLista"
+      type="button"
+      class="px-4 py-2 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed
+             bg-[var(--bg-card)] text-[var(--text-color)]
+             border border-[var(--border-color)]
+             hover:bg-[var(--table-row-hover)]"
+    >
+      Próxima
+    </button>
+  </div>
+  <div
+    class="w-full p-5 rounded-lg mt-8
+           bg-[var(--bg-card)]
+           border border-[var(--border-color)]
+           text-[var(--text-color)]"
+  >
+    <h4 class="text-lg font-semibold text-[var(--text-color)]">
+      Níveis de Acesso e Permissões
+    </h4>
+
+    <p class="text-sm mt-1 text-[var(--text-dim)]">
+      Entenda o que cada perfil de usuário pode fazer dentro do sistema.
+    </p>
+
+    <ul class="mt-4 space-y-3">
+      <li class="flex items-start text-[var(--text-color)]">
+        <span class="font-bold text-sky-500 w-24 flex-shrink-0">DEV:</span>
+        <span>Acesso total. Pode criar, editar e remover qualquer tipo de usuário.</span>
+      </li>
+
+      <li class="flex items-start text-[var(--text-color)]">
+        <span class="font-bold text-emerald-500 w-24 flex-shrink-0">ADMIN:</span>
+        <span>Pode gerenciar usuários do tipo "Gerente". Não pode alterar outros Administradores.</span>
+      </li>
+
+      <li class="flex items-start text-[var(--text-color)]">
+        <span class="font-bold text-amber-500 w-24 flex-shrink-0">GERENTE:</span>
+        <span>Acesso operacional. Não possui permissão para gerenciar outros usuários.</span>
+      </li>
+    </ul>
+  </div>
+  <div
+    *ngIf="modalAberto"
+    class="fixed inset-0 z-50 flex items-center justify-center
+          p-0 sm:p-4
+          backdrop-blur-sm bg-black/60"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title"
+  >
+    <div
+      class="w-full h-full
+            sm:h-auto sm:max-h-[90vh]
+            sm:max-w-md
+            flex flex-col
+            rounded-none sm:rounded-xl
+            shadow-2xl
+            bg-[var(--bg-card)] text-[var(--text-color)]
+            border-t border-[var(--border-color)] sm:border"
+    >
+      <div class="flex items-start gap-4 p-5">
+        <div
+          class="flex-shrink-0 w-12 h-12 rounded-full
+                 bg-[var(--accent-yellow)] text-black
+                 flex items-center justify-center"
+        >
+          <ng-container *ngIf="editando; else novoIcon">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z" />
+            </svg>
+          </ng-container>
+          <ng-template #novoIcon>
+            <svg
+              class="w-7 h-7"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2.5"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 4.5v15m7.5-7.5h-15"
+              />
+            </svg>
+          </ng-template>
+        </div>
+
+        <div class="flex-grow">
+          <h2 id="modal-title" class="text-xl font-bold text-[var(--text-color)]">
+            {{ editando ? 'Editar Usuário' : 'Novo usuário' }}
+          </h2>
+          <p class="text-sm text-[var(--text-dim)] mt-1">
+            Preencha os campos obrigatórios e salve.
+          </p>
+        </div>
+
+        <button
+          (click)="!estaProcessandoAcao && fecharModal()"
+          type="button"
+          [disabled]="estaProcessandoAcao"
+          class="p-1 rounded-full text-[var(--text-dim)]
+                 hover:bg-[var(--table-row-hover)] hover:text-red-500
+                 focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)] focus:ring-offset-2
+                 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Fechar"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <form
+        #f="ngForm"
+        (ngSubmit)="salvar(f)"
+        class="p-5 space-y-4 overflow-y-auto border-t border-[var(--border-color)]"
+      >
+        <div>
+          <label
+            for="nome"
+            class="block text-sm font-medium text-[var(--text-color)] mb-1"
+          >
+            Nome <span class="text-red-500">*</span>
+          </label>
+          <input
+            id="nome"
+            type="text"
+            [(ngModel)]="form.nome"
+            name="nome"
+            required
+            minlength="3"
+            maxlength="25"
+            placeholder="Ex: João da Silva"
+            class="w-full rounded-lg p-2 text-base
+                   bg-[var(--bg-card)] text-[var(--text-color)]
+                   border border-gray-700
+                   focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]"
+          />
+          <div
+            *ngIf="f.submitted && f.controls['nome']?.errors"
+            class="text-red-500 text-xs mt-1"
+          >
+            O nome deve ter pelo menos 3 caracteres.
+          </div>
+          <div
+            *ngIf="form.nome && form.nome.length >= 25"
+            class="text-red-500 text-xs mt-1"
+          >
+            Limite de 25 caracteres atingido.
+          </div>
+        </div>
+        <div class="relative">
+          <label
+            for="email"
+            class="block text-sm font-medium text-[var(--text-color)] mb-1"
+          >
+            E-mail <span class="text-red-500">*</span>
+          </label>
+          <input
+            id="email"
+            type="email"
+            [(ngModel)]="form.email"
+            name="email"
+            required
+            email
+            maxlength="50"
+            placeholder="Ex: joao.silva@email.com"
+            autocomplete="off"
+            (input)="onEmailInput($event)"
+            (keydown)="onEmailKeydown($event)"
+            (blur)="onEmailBlur()"
+            class="w-full rounded-lg p-2 text-base
+                   bg-[var(--bg-card)] text-[var(--text-color)]
+                   border border-gray-700
+                   focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]"
+          />
+          <div
+            *ngIf="emailHintsOpen && emailCandidates.length"
+            class="absolute z-20 left-0 right-0 mt-1 rounded-xl shadow-lg p-2
+                   bg-[var(--bg-card)] border border-[var(--border-color)]"
+            role="listbox"
+            aria-label="Sugestões de domínio de e-mail"
+          >
+            <button
+              *ngFor="let d of emailCandidates; let i = index"
+              type="button"
+              class="w-full text-left px-3 py-2 rounded-lg text-sm sm:text-base
+                     flex items-center gap-2
+                     hover:bg-[var(--table-row-hover)] focus:bg-[var(--table-row-hover)]
+                     text-[var(--text-color)]"
+              [ngClass]="{ 'bg-[var(--table-row-hover)]': i === emailActiveIndex }"
+              (mousedown)="applyEmailDomain(d)"
+              role="option"
+              [attr.aria-selected]="i === emailActiveIndex"
+            >
+              <span
+                class="inline-block px-2 py-0.5 rounded-full border text-[var(--text-color)]
+                       bg-[var(--bg-card)] border-[var(--border-color)] text-xs"
+              >
+                {{ d }}
+              </span>
+            </button>
+          </div>
+          <div
+            *ngIf="f.submitted && f.controls['email']?.errors"
+            class="text-red-500 text-xs mt-1"
+          >
+            <span *ngIf="f.controls['email']?.errors?.['required']">
+              O e-mail é obrigatório.
+            </span>
+            <span *ngIf="f.controls['email']?.errors?.['email']">
+              Informe um e-mail válido.
+            </span>
+          </div>
+          <div
+            *ngIf="form.email && form.email.length >= 50"
+            class="text-red-500 text-xs mt-1"
+          >
+            Limite de 50 caracteres atingido.
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label
+              for="username"
+              class="block text-sm font-medium text-[var(--text-color)] mb-1"
+            >
+              Usuário <span class="text-[var(--text-dim)] font-normal">(opcional)</span>
+            </label>
+            <input
+              id="username"
+              type="text"
+              [(ngModel)]="form.username"
+              name="username"
+              maxlength="20"
+              placeholder="Ex: joao.silva"
+              class="w-full rounded-lg p-2 text-base
+                     bg-[var(--bg-card)] text-[var(--text-color)]
+                     border border-gray-700
+                     focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]"
+            />
+            <div
+              *ngIf="form.username && form.username.length >= 20"
+              class="text-red-500 text-xs mt-1"
+            >
+              Limite de 20 caracteres atingido.
+            </div>
+          </div>
+          <div>
+            <label
+              for="numero"
+              class="block text-sm font-medium text-[var(--text-color)] mb-1"
+            >
+              Telefone <span class="text-[var(--text-dim)] font-normal">(opcional)</span>
+            </label>
+            <input
+              id="numero"
+              type="text"
+              [(ngModel)]="form.numero"
+              name="numero"
+              (input)="onNumeroInput($event)"
+              (paste)="onNumeroPaste($event)"
+              (keydown)="bloquearNaoDigitos($event)"
+              placeholder="(00) 00000-0000"
+              class="w-full rounded-lg p-2 text-base
+                     bg-[var(--bg-card)] text-[var(--text-color)]
+                     border border-gray-700
+                     focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]"
+            />
+            <div
+              *ngIf="f.submitted && form.numero && !telefoneOpcionalValido(form.numero)"
+              class="text-red-500 text-xs mt-1"
+            >
+              Telefone deve conter exatamente 11 dígitos.
+            </div>
+          </div>
+        </div>
+        <div class="relative">
+          <label
+            for="role"
+            class="block text-sm font-medium text-[var(--text-color)] mb-1"
+          >
+            Perfil <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="role"
+            [(ngModel)]="form.role"
+            name="role"
+            required
+            class="w-full rounded-lg p-2 text-base appearance-none
+                   bg-[var(--bg-card)] text-[var(--text-color)]
+                   border border-gray-700
+                   focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]"
+          >
+            <option [ngValue]="''" disabled>Selecione um perfil</option>
+            <option *ngFor="let p of perfisDisponiveis" [value]="p">
+              {{ p }}
+            </option>
+          </select>
+          <div
+            class="pointer-events-none absolute inset-y-0 right-0 top-[30px] flex items-center px-3
+                   text-[var(--text-dim)]"
+          >
+            <svg
+              class="h-5 w-5"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+        </div>
+        <div class="pt-2">
+          <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              [(ngModel)]="form.ativo"
+              name="ativo"
+              class="h-4 w-4 rounded border-[var(--border-color)] text-[var(--accent-yellow)] focus:ring-[var(--accent-yellow)]"
+            />
+            <span class="text-sm font-medium text-[var(--text-color)]">
+              Usuário ativo
+            </span>
+          </label>
+        </div>
+        <div
+          *ngIf="!editando"
+          class="rounded-md p-3 mt-2 border-l-4
+                 bg-yellow-50 border-[var(--border-color)]"
+        >
+          <div class="flex items-start gap-3">
+            <div class="flex-shrink-0">
+              <svg
+                class="h-5 w-5 text-yellow-500"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+            <div class="text-sm text-yellow-800">
+              <p>
+                A senha será <strong>gerada automaticamente</strong>. Oriente o
+                usuário a <strong>alterar a senha</strong> no primeiro acesso.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end gap-3 pt-6">
+          <button
+            type="button"
+            (click)="!estaProcessandoAcao && fecharModal()"
+            [disabled]="estaProcessandoAcao"
+            class="inline-flex items-center justify-center gap-2 min-w-[130px] px-4 py-2 rounded-xl text-sm font-semibold transition
+                   bg-transparent text-[var(--text-color)] border border-[var(--border-color)]
+                   hover:bg-[var(--table-row-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)] focus:ring-offset-2
+                   disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="estaProcessandoAcao"
+            class="inline-flex items-center justify-center gap-2 min-w-[130px] px-4 py-2 rounded-xl text-sm font-semibold transition
+                   text-black bg-[var(--accent-yellow)] hover:brightness-110 border border-transparent shadow-sm
+                   focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)] focus:ring-offset-2
+                   disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <span *ngIf="estaProcessandoAcao" class="w-4 h-4 flex items-center justify-center">
+              <span class="btn-spinner-dark" aria-hidden="true"></span>
+            </span>
+            <span>
+              {{ estaProcessandoAcao
+                ? (editando ? 'Salvando...' : 'Criando usuário...')
+                : (editando ? 'Salvar alterações' : 'Salvar') }}
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div
+    *ngIf="confirmarExcluirAberto"
+    class="fixed inset-0 z-50 flex items-center justify-center px-3 backdrop-blur-sm bg-black/60"
+  >
+    <div
+      class="w-full max-w-sm relative rounded-2xl shadow-xl
+             bg-[var(--bg-card)] text-[var(--text-color)]
+             border border-[var(--border-color)]"
+    >
+      <div class="flex items-start gap-4 p-5">
+        <div
+          class="flex-shrink-0 w-12 h-12 rounded-full
+                 bg-red-600 text-white
+                 flex items-center justify-center"
+        >
+          <svg
+            class="w-7 h-7"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="2.5"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"
+            />
+          </svg>
+        </div>
+
+        <div class="flex-grow">
+          <h3 class="text-xl font-bold text-[var(--text-color)]">
+            Confirmar exclusão
+          </h3>
+          <p class="mt-1 text-[var(--text-dim)]">
+            Tem certeza que deseja excluir o usuário
+            <strong class="text-[var(--text-color)]">
+              {{ usuarioParaExcluir?.nome }}
+            </strong>?
+            Essa ação não pode ser desfeita.
+          </p>
+        </div>
+
+        <button
+          (click)="!estaProcessandoAcao && cancelarExclusao()"
+          type="button"
+          [disabled]="estaProcessandoAcao"
+          class="p-1 rounded-full text-[var(--text-dim)] -mt-2 -mr-2
+                 hover:bg-[var(--table-row-hover)] hover:text-red-600
+                 focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)] focus:ring-offset-2
+                 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Fechar"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+      <div class="px-5">
+        <div class="h-px w-full bg-[var(--border-color)]"></div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="flex gap-3 justify-end p-4">
+        <button
+          (click)="!estaProcessandoAcao && cancelarExclusao()"
+          [disabled]="estaProcessandoAcao"
+          class="inline-flex items-center justify-center gap-2 min-w-[130px] px-4 py-2 rounded-xl font-semibold transition
+                 bg-transparent text-[var(--text-color)]
+                 border border-[var(--border-color)]
+                 hover:bg-[var(--table-row-hover)]
+                 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          Cancelar
+        </button>
+
+        <button
+          (click)="confirmarExclusao()"
+          [disabled]="estaProcessandoAcao"
+          class="inline-flex items-center justify-center gap-2 min-w-[130px] px-4 py-2 rounded-xl font-semibold text-white
+                 bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          <span *ngIf="estaProcessandoAcao" class="w-4 h-4 flex items-center justify-center">
+            <span class="btn-spinner-dark" aria-hidden="true"></span>
+          </span>
+          <span>{{ estaProcessandoAcao ? 'Excluindo...' : 'Excluir' }}</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+<div
+  *ngIf="detalhesAberto"
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm bg-black/60"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="modal-detalhes-title"
+  (keydown.escape)="fecharDetalhes()"
+  tabindex="0"
+>
+  <div
+    class="w-full max-w-lg flex flex-col max-h-[90vh] rounded-2xl shadow-2xl
+           bg-[var(--bg-card)] text-[var(--text-color)]
+           border border-[var(--border-color)]"
+  >
+    <div class="flex items-start gap-4 p-5">
+      <!-- Avatar -->
+      <div class="relative shrink-0">
+        <div class="relative w-[64px] h-[64px] sm:w-[72px] sm:h-[72px]">
+          <div
+            class="w-full h-full rounded-full overflow-hidden
+                   ring-2 ring-[var(--border-color)]
+                   ring-offset-2 ring-offset-[var(--bg-card)]
+                   shadow"
+          >
+            <ng-container *ngIf="getAvatarSafe(usuarioDetalhes) as safeUrl; else fallbackAvatar">
+              <img
+                [src]="safeUrl"
+                alt="Foto de {{ usuarioDetalhes?.nome }}"
+                class="w-full h-full object-cover"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+              />
+            </ng-container>
+
+            <ng-template #fallbackAvatar>
+              <div
+                class="w-full h-full flex items-center justify-center text-white font-bold text-xl select-none"
+                [style.background]="getAvatarBg(usuarioDetalhes)"
+              >
+                {{ getInitials(usuarioDetalhes?.nome) || '??' }}
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+      <div class="flex-grow min-w-0">
+        <div class="flex items-center gap-2">
+          <h2 id="modal-detalhes-title" class="text-xl font-extrabold truncate leading-tight">
+            {{ usuarioDetalhes?.nome || '—' }}
+          </h2>
+
+          <span
+            class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold border tracking-wide"
+            [ngClass]="{
+              'bg-blue-100 text-blue-800 border-blue-200': usuarioDetalhes?.role === 'DEV',
+              'bg-purple-100 text-purple-800 border-purple-200': usuarioDetalhes?.role === 'ADMIN',
+              'bg-teal-100 text-teal-800 border-teal-200': usuarioDetalhes?.role === 'GERENTE',
+              'bg-slate-100 text-slate-700 border-slate-200': !['DEV','ADMIN','GERENTE'].includes(usuarioDetalhes?.role || '')
+            }"
+          >
+            {{ usuarioDetalhes?.role || 'Usuário' }}
+          </span>
+        </div>
+
+        <div class="text-xs text-[var(--text-dim)] mt-0.5 truncate">
+          {{ usuarioDetalhes?.username || '' }}
+        </div>
+      </div>
+      <button
+        (click)="fecharDetalhes()"
+        type="button"
+        class="p-1.5 rounded-full text-[var(--text-dim)]
+               hover:bg-[var(--table-row-hover)] hover:text-red-500
+               focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)] focus:ring-offset-2"
+        aria-label="Fechar"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <div class="p-5 overflow-y-auto border-t border-[var(--border-color)]">
+      <dl class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-4">
+          <dt class="text-sm font-medium text-[var(--text-dim)]">Usuário</dt>
+          <dd class="mt-1 text-sm font-semibold break-words sm:col-span-2 sm:mt-0">
+            {{ usuarioDetalhes?.username || '—' }}
+          </dd>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-4">
+          <dt class="text-sm font-medium text-[var(--text-dim)]">E-mail</dt>
+          <dd class="mt-1 text-sm font-semibold break-all sm:col-span-2 sm:mt-0">
+            {{ usuarioDetalhes?.email || '—' }}
+          </dd>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-4">
+          <dt class="text-sm font-medium text-[var(--text-dim)]">Telefone</dt>
+          <dd class="mt-1 text-sm font-semibold sm:col-span-2 sm:mt-0">
+            {{
+              usuarioDetalhes?.numero
+                ? formatarTelefonePadrao(somenteDigitos(usuarioDetalhes?.numero))
+                : '—'
+            }}
+          </dd>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-4">
+          <dt class="text-sm font-medium text-[var(--text-dim)]">Status</dt>
+          <dd class="mt-1 text-sm font-semibold sm:col-span-2 sm:mt-0">
+            <span
+              class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold"
+              [ngClass]="usuarioDetalhes?.ativo ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-800'"
+            >
+              <span class="w-2 h-2 rounded-full" [ngClass]="usuarioDetalhes?.ativo ? 'bg-green-500' : 'bg-gray-500'"></span>
+              {{ usuarioDetalhes?.ativo ? 'Ativo' : 'Inativo' }}
+            </span>
+          </dd>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-4">
+          <dt class="text-sm font-medium text-[var(--text-dim)]">Online agora</dt>
+          <dd class="mt-1 text-sm font-semibold sm:col-span-2 sm:mt-0">
+            <span
+              *ngIf="usuarioDetalhes?.online; else offlineLabel"
+              class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800"
+            >
+              <span class="w-2 h-2 rounded-full bg-green-500"></span>
+              Online
+            </span>
+            <ng-template #offlineLabel>
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-200 text-gray-800">
+                <span class="w-2 h-2 rounded-full bg-gray-500"></span>
+                Offline
+              </span>
+            </ng-template>
+          </dd>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-4" *ngIf="!usuarioDetalhes?.ativo">
+          <dt class="text-sm font-medium text-[var(--text-dim)]">Dias p/ exclusão</dt>
+          <dd class="mt-1 text-sm font-semibold sm:col-span-2 sm:mt-0">
+            <span *ngIf="hasDias(usuarioDetalhes!)" class="text-red-500 font-bold">
+              {{ getDias(usuarioDetalhes!) }}
+            </span>
+            <span *ngIf="!hasDias(usuarioDetalhes!)" class="text-[var(--text-dim)]">—</span>
+          </dd>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-4">
+          <dt class="text-sm font-medium text-[var(--text-dim)]">Criado em</dt>
+          <dd class="mt-1 text-sm font-semibold sm:col-span-2 sm:mt-0">
+            {{
+              usuarioDetalhes?.criadoEm
+                ? (usuarioDetalhes?.criadoEm | date: 'dd/MM/yyyy HH:mm')
+                : '—'
+            }}
+          </dd>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-4" *ngIf="usuarioDetalhes?.criadoPorNome || usuarioDetalhes?.criadoPorId">
+          <dt class="text-sm font-medium text-[var(--text-dim)]">Criado por</dt>
+          <dd class="mt-1 text-sm font-semibold sm:col-span-2 sm:mt-0">
+            {{ usuarioDetalhes?.criadoPorNome || ('ID ' + (usuarioDetalhes?.criadoPorId || '—')) }}
+          </dd>
+        </div>
+      </dl>
+      <div class="mt-6 pt-5 border-t border-[var(--border-color)]">
+        <div class="flex justify-end gap-3">
+          <button
+            (click)="fecharDetalhes()"
+            class="inline-flex items-center justify-center gap-2 min-w-[130px] px-4 py-2 rounded-xl font-semibold transition
+                   bg-transparent text-[var(--text-color)] border border-[var(--border-color)] hover:bg-[var(--table-row-hover)]"
+            type="button"
+          >
+            Fechar
+          </button>
+
+          <button
+            *ngIf="usuarioDetalhes && podeEditar(usuarioDetalhes)"
+            (click)="abrirEdicao(usuarioDetalhes!)"
+            class="inline-flex items-center justify-center gap-2 min-w-[130px] px-4 py-2 rounded-xl font-semibold text-black shadow bg-[var(--accent-yellow)] hover:brightness-110"
+            type="button"
+          >
+            Editar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+  <!-- MODAL CONFIRMAR RESET SENHA -->
+  <div
+    *ngIf="confirmarResetAberto"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm bg-black/60"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-reset-title"
+  >
+    <div
+      class="w-full max-w-sm relative rounded-2xl shadow-2xl
+             bg-[var(--bg-card)] text-[var(--text-color)]
+             border border-[var(--border-color)]"
+    >
+
+      <div class="flex items-start gap-4 p-5">
+        <div
+          class="flex-shrink-0 w-12 h-12 rounded-full
+                 bg-blue-100 text-blue-600
+                 flex items-center justify-center"
+        >
+          <svg
+            class="w-7 h-7"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="2"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+            />
+          </svg>
+        </div>
+
+        <div class="flex-grow">
+          <h3 id="modal-reset-title" class="text-xl font-bold text-[var(--text-color)]">
+            Resetar senha
+          </h3>
+          <p class="mt-1 text-sm text-[var(--text-dim)]">
+            Tem certeza que deseja resetar a senha do usuário
+            <strong class="text-[var(--text-color)]">
+              {{ usuarioParaReset?.nome }}
+            </strong>?
+          </p>
+        </div>
+
+        <button
+          (click)="!estaProcessandoAcao && cancelarReset()"
+          type="button"
+          [disabled]="estaProcessandoAcao"
+          class="p-1 rounded-full text-[var(--text-dim)] -mt-2 -mr-2
+                 hover:bg-[var(--table-row-hover)] hover:text-red-500
+                 focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)] focus:ring-offset-2
+                 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Fechar"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+      <div class="px-5">
+        <div class="h-px w-full bg-[var(--border-color)]"></div>
+      </div>
+
+      <div class="flex gap-3 justify-end p-4">
+        <button
+          (click)="!estaProcessandoAcao && cancelarReset()"
+          [disabled]="estaProcessandoAcao"
+          class="inline-flex items-center justify-center gap-2 min-w-[130px] px-4 py-2 rounded-xl font-semibold transition
+                 bg-transparent text-[var(--text-color)] border border-[var(--border-color)] hover:bg-[var(--table-row-hover)]
+                 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          Cancelar
+        </button>
+
+        <button
+          (click)="confirmarReset()"
+          [disabled]="estaProcessandoAcao"
+          class="inline-flex items-center justify-center gap-2 min-w-[130px] px-4 py-2 rounded-xl font-semibold text-white bg-green-600 hover:bg-green-700
+                 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          <span *ngIf="estaProcessandoAcao" class="w-4 h-4 flex items-center justify-center">
+            <span class="btn-spinner-dark" aria-hidden="true"></span>
+          </span>
+          <span>{{ estaProcessandoAcao ? 'Resetando...' : 'Resetar' }}</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+  <div
+    *ngIf="modalSenhaAberto"
+    class="fixed inset-0 z-50 flex items-center justify-center
+           px-3 py-6 sm:p-4 backdrop-blur-sm bg-black/60"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="tituloModalSenha"
+  >
+    <div
+      class="w-full max-w-sm sm:max-w-md lg:max-w-lg
+             flex flex-col max-h-[90vh] rounded-2xl shadow-2xl mx-auto
+             bg-[var(--bg-card)] text-[var(--text-color)]
+             border border-[var(--border-color)]"
+    >
+      <div class="flex items-start gap-4 p-5">
+        <div
+          class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center shrink-0"
+        >
+          <svg
+            class="w-7 h-7 text-green-600"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </div>
+        <div class="flex-grow">
+          <h2 id="tituloModalSenha" class="text-lg sm:text-xl font-bold text-[var(--text-color)]">
+            Senha temporária gerada
+          </h2>
+          <p class="text-xs sm:text-sm mt-1 text-[var(--text-dim)]">
+            Este modal se fechará em
+            <span class="font-semibold text-[var(--text-color)]">
+              {{ formatCountdown(contadorSegundos) }}
+            </span>.
+          </p>
+        </div>
+        <button
+          (click)="fecharModalSenha()"
+          type="button"
+          class="p-1 rounded-full text-[var(--text-dim)]
+                 hover:bg-[var(--table-row-hover)]
+                 focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)] focus:ring-offset-2"
+          aria-label="Fechar"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+      <div class="p-5 border-t border-[var(--border-color)]">
+        <label
+          for="senha-gerada"
+          class="block text-xs sm:text-sm font-semibold mb-1 text-[var(--text-color)]"
+        >
+          Nova senha temporária
+        </label>
+
+        <div class="mt-1 flex flex-col sm:flex-row sm:items-stretch gap-2 sm:gap-3">
+          <input
+            id="senha-gerada"
+            [type]="mostrarSenha ? 'text' : 'password'"
+            [value]="senhaGerada || '—'"
+            readonly
+            class="flex-1 px-3 py-2 rounded-lg border text-base font-mono tracking-wider
+                   bg-[var(--bg-card)] text-[var(--text-color)]
+                   border-gray-700"
+          />
+
+          <button
+            (click)="toggleMostrarSenha()"
+            type="button"
+            class="px-3 py-2 rounded-lg font-semibold text-xs sm:text-sm transition
+                   border bg-transparent text-[var(--text-color)]
+                   border-[var(--border-color)]
+                   hover:bg-[var(--table-row-hover)]
+                   w-full sm:w-auto"
+          >
+            <span *ngIf="!mostrarSenha">Mostrar</span>
+            <span *ngIf="mostrarSenha">Ocultar</span>
+          </button>
+
+          <button
+            (click)="copiarSenha()"
+            type="button"
+            class="px-3 py-2 rounded-lg font-semibold text-xs sm:text-sm text-black
+                   bg-[var(--accent-yellow)] hover:brightness-110
+                   w-full sm:w-auto"
+          >
+            Copiar
+          </button>
+        </div>
+
+        <div class="mt-4 text-xs sm:text-sm flex items-start gap-3 text-[var(--text-dim)]">
+          <svg
+            class="w-5 h-5 mt-0.5 text-[var(--text-dim)] shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span>
+            Compartilhe com o usuário com segurança e peça para alterar no primeiro acesso.
+          </span>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div
+        class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 p-4 rounded-b-2xl
+               border-t border-[var(--border-color)] bg-black/10"
+      >
+        <button
+          (click)="fecharModalSenha()"
+          class="inline-flex items-center justify-center gap-2 min-w-[130px] px-4 py-2 rounded-xl font-semibold transition
+                 bg-transparent text-[var(--text-color)] border border-[var(--border-color)]
+                 hover:bg-[var(--table-row-hover)] w-full sm:w-auto"
+        >
+          Fechar agora
+        </button>
+      </div>
+    </div>
+  </div>
+  <div
+    *ngIf="confirmarStatusAberto"
+    class="fixed inset-0 z-50 flex items-center justify-center px-3 backdrop-blur-sm bg-black/60"
+  >
+    <div
+      class="w-full max-w-sm p-6 relative rounded-2xl shadow-xl
+             bg-[var(--bg-card)] text-[var(--text-color)]
+             border border-[var(--border-color)]"
+    >
+      <div class="flex items-start gap-4">
+        <div
+          class="flex-shrink-0 w-12 h-12 rounded-full
+                 bg-yellow-100 text-yellow-600
+                 flex items-center justify-center"
+        >
+          <svg
+            class="w-7 h-7"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="2"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"
+            />
+          </svg>
+        </div>
+
+        <div class="flex-grow">
+          <h3 class="text-lg font-bold mb-1 text-[var(--text-color)]">
+            {{ proximoStatus ? 'Ativar usuário' : 'Desativar usuário' }}
+          </h3>
+          <p class="text-[var(--text-dim)]">
+            Tem certeza que deseja
+            <strong class="text-[var(--text-color)]">
+              {{ proximoStatus ? 'ativar' : 'desativar' }}
+            </strong>
+            o usuário
+            <strong class="text-[var(--text-color)]">
+              {{ usuarioParaStatus?.nome }}
+            </strong>?
+          </p>
+        </div>
+
+        <button
+          (click)="!estaProcessandoAcao && cancelarStatus()"
+          type="button"
+          [disabled]="estaProcessandoAcao"
+          class="p-1 rounded-full text-[var(--text-dim)] -mt-2 -mr-2
+                 hover:bg-[var(--table-row-hover)]
+                 focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]
+                 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Fechar"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <div
+        *ngIf="!proximoStatus"
+        class="mt-4 rounded-md p-3 border-l-4 bg-yellow-50 border-yellow-400"
+      >
+        <div class="flex items-start gap-3">
+          <div class="flex-shrink-0">
+            <svg
+              class="h-5 w-5 text-yellow-500"
+              viewBox="0 0 20  20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+          <div class="text-sm text-yellow-800">
+            Após a desativação, o cadastro do usuário será
+            <strong>permanentemente excluído</strong> em 30 dias caso não seja
+            reativado.
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-3 justify-end mt-6">
+        <button
+          (click)="!estaProcessandoAcao && cancelarStatus()"
+          [disabled]="estaProcessandoAcao"
+          class="inline-flex items-center justify-center gap-2 min-w-[130px] px-4 py-2 rounded-xl font-semibold transition
+                 bg-transparent text-[var(--text-color)] border border-[var(--border-color)] hover:bg-[var(--table-row-hover)]
+                 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="confirmarStatus()"
+          [disabled]="estaProcessandoAcao"
+          class="inline-flex items-center justify-center gap-2 min-w-[130px] px-4 py-2 rounded-xl font-semibold hover:opacity-95
+             disabled:opacity-60 disabled:cursor-not-allowed"
+          [ngClass]="proximoStatus
+          ? 'bg-green-600 hover:bg-green-700 text-white'
+          : 'bg-[var(--accent-yellow)] hover:brightness-110 text-black'"
+        >
+          <span *ngIf="estaProcessandoAcao" class="w-4 h-4 flex items-center justify-center">
+            <span class="btn-spinner-dark" aria-hidden="true"></span>
+          </span>
+          <span>
+            {{ estaProcessandoAcao
+              ? (proximoStatus ? 'Ativando...' : 'Desativando...')
+              : (proximoStatus ? 'Ativar' : 'Desativar') }}
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

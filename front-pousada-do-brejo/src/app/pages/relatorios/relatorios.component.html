@@ -1,0 +1,625 @@
+<div
+  class="w-full mx-auto flex flex-col text-[var(--text-color)]
+         p-4 sm:p-6
+         lg:max-w-4xl xl:max-w-5xl"
+>
+  <div
+    class="flex flex-col gap-2 w-full
+           sm:flex-row sm:items-start sm:justify-between
+           mb-6 pt-4 sm:pt-0"
+  >
+    <div class="text-center sm:text-left w-full">
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-[var(--text-color)]">
+        Relatórios
+      </h1>
+      <p class="text-base mt-1 text-[var(--text-dim)]">
+        Emita relatórios de Hospedagens, Quartos, Financeiro e Reservas.
+      </p>
+    </div>
+  </div>
+
+  <nav
+    class="w-full flex flex-wrap gap-2 mb-6
+           justify-center sm:justify-start"
+  >
+    <button
+      type="button"
+      (click)="trocarAba('geral')"
+      [ngClass]="tabClasses('geral')"
+      class="px-4 py-2 rounded-lg text-sm transition-all"
+    >
+      Geral
+    </button>
+
+    <button
+      type="button"
+      (click)="trocarAba('financeiro')"
+      [ngClass]="tabClasses('financeiro')"
+      class="px-4 py-2 rounded-lg text-sm transition-all"
+    >
+      Financeiro
+    </button>
+
+    <button
+      type="button"
+      (click)="trocarAba('hospedagens')"
+      [ngClass]="tabClasses('hospedagens')"
+      class="px-4 py-2 rounded-lg text-sm transition-all"
+    >
+      Hospedagens
+    </button>
+
+    <button
+      type="button"
+      (click)="trocarAba('quartos')"
+      [ngClass]="tabClasses('quartos')"
+      class="px-4 py-2 rounded-lg text-sm transition-all"
+    >
+      Quartos
+    </button>
+
+    <button
+      type="button"
+      (click)="trocarAba('reservas')"
+      [ngClass]="tabClasses('reservas')"
+      class="px-4 py-2 rounded-lg text-sm transition-all"
+    >
+      Reservas
+    </button>
+  </nav>
+
+  <section
+    class="w-full rounded-2xl shadow p-4 sm:p-8
+           bg-[var(--bg-card)] border border-[var(--border-color)]
+           overflow-x-hidden"
+  >
+    <form
+      *ngIf="abaAtual === 'geral'"
+      [formGroup]="periodo"
+      (ngSubmit)="gerar()"
+      class="grid gap-6"
+    >
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <label class="flex flex-col gap-1 text-xs sm:text-sm min-w-0">
+          <span class="font-medium text-[var(--text-color)]">
+            Data início <span class="text-red-500">*</span>
+          </span>
+          <input
+            class="w-full h-10 sm:h-11
+                   px-2 sm:px-3 rounded-lg
+                   text-xs sm:text-sm outline-none transition
+                   bg-[var(--bg-color)] text-[var(--text-color)]
+                   border border-[var(--border-color)]
+                   focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]
+                   min-w-0 max-w-[260px] sm:max-w-full"
+            type="date"
+            formControlName="dataInicio"
+          />
+        </label>
+
+        <label class="flex flex-col gap-1 text-xs sm:text-sm min-w-0">
+          <span class="font-medium text-[var(--text-color)]">
+            Data fim <span class="text-red-500">*</span>
+          </span>
+          <input
+            class="w-full h-10 sm:h-11
+                   px-2 sm:px-3 rounded-lg
+                   text-xs sm:text-sm outline-none transition
+                   bg-[var(--bg-color)] text-[var(--text-color)]
+                   border border-[var(--border-color)]
+                   focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]
+                   min-w-0 max-w-[260px] sm:max-w-full"
+            type="date"
+            formControlName="dataFim"
+          />
+        </label>
+      </div>
+
+      <div class="flex flex-wrap gap-2.5">
+        <button
+          type="button"
+          [ngClass]="chipClasses('geral', 'today')"
+          class="px-4 py-2 text-sm rounded-full transition-all"
+          (click)="onQuick('geral','today')"
+        >
+          Hoje
+        </button>
+
+        <button
+          type="button"
+          [ngClass]="chipClasses('geral', '7d')"
+          class="px-4 py-2 text-sm rounded-full transition-all"
+          (click)="onQuick('geral','7d')"
+        >
+          Últimos 7 dias
+        </button>
+
+        <button
+          type="button"
+          [ngClass]="chipClasses('geral', 'month')"
+          class="px-4 py-2 text-sm rounded-full transition-all"
+          (click)="onQuick('geral','month')"
+        >
+          Mês atual
+        </button>
+      </div>
+
+      <div class="flex justify-end mt-4">
+        <button
+          type="submit"
+          [disabled]="periodo.invalid || gerando()"
+          class="inline-flex items-center justify-center gap-2 min-w-[150px] min-h-[48px]
+                 px-6 py-3 rounded-xl text-base font-semibold
+                 bg-[var(--accent-yellow)] text-gray-900 border border-transparent
+                 hover:brightness-105 disabled:opacity-60 disabled:cursor-not-allowed
+                 shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)] focus:ring-offset-2"
+        >
+          {{ gerando() ? 'Gerando…' : 'Gerar PDF' }}
+        </button>
+      </div>
+    </form>
+
+    <!-- FINANCEIRO -->
+    <form
+      *ngIf="abaAtual === 'financeiro'"
+      [formGroup]="financeiro"
+      (ngSubmit)="gerar()"
+      class="grid gap-6"
+    >
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <label class="flex flex-col gap-1 text-xs sm:text-sm min-w-0">
+          <span class="font-medium text-[var(--text-color)]">
+            Data início <span class="text-red-500">*</span>
+          </span>
+          <input
+            class="w-full h-10 sm:h-11
+                   px-2 sm:px-3 rounded-lg
+                   text-xs sm:text-sm outline-none transition
+                   bg-[var(--bg-color)] text-[var(--text-color)]
+                   border border-[var(--border-color)]
+                   focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]
+                   min-w-0 max-w-[260px] sm:max-w-full"
+            type="date"
+            formControlName="dataInicio"
+          />
+        </label>
+
+        <label class="flex flex-col gap-1 text-xs sm:text-sm min-w-0">
+          <span class="font-medium text-[var(--text-color)]">
+            Data fim <span class="text-red-500">*</span>
+          </span>
+          <input
+            class="w-full h-10 sm:h-11
+                   px-2 sm:px-3 rounded-lg
+                   text-xs sm:text-sm outline-none transition
+                   bg-[var(--bg-color)] text-[var(--text-color)]
+                   border border-[var(--border-color)]
+                   focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]
+                   min-w-0 max-w-[260px] sm:max-w-full"
+            type="date"
+            formControlName="dataFim"
+          />
+        </label>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+        <div class="flex flex-wrap gap-2.5">
+          <button
+            type="button"
+            [ngClass]="chipClasses('financeiro', 'today')"
+            class="px-4 py-2 text-sm rounded-full transition-all"
+            (click)="onQuick('financeiro','today')"
+          >
+            Hoje
+          </button>
+
+          <button
+            type="button"
+            [ngClass]="chipClasses('financeiro', '7d')"
+            class="px-4 py-2 text-sm rounded-full transition-all"
+            (click)="onQuick('financeiro','7d')"
+          >
+            Últimos 7 dias
+          </button>
+
+          <button
+            type="button"
+            [ngClass]="chipClasses('financeiro', 'month')"
+            class="px-4 py-2 text-sm rounded-full transition-all"
+            (click)="onQuick('financeiro','month')"
+          >
+            Mês atual
+          </button>
+        </div>
+
+        <label class="flex flex-col gap-1 text-xs sm:text-sm">
+          <span class="font-medium text-[var(--text-color)]">Tipo de lançamento</span>
+          <select
+            class="w-full h-10 sm:h-11
+                   px-3 rounded-lg
+                   text-xs sm:text-sm outline-none transition appearance-none
+                   bg-[var(--bg-color)] text-[var(--text-color)]
+                   border border-[var(--border-color)]
+                   focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]"
+            formControlName="tipo"
+          >
+            <option value="TODAS">Todas</option>
+            <option value="ENTRADA">Somente entradas</option>
+            <option value="SAIDA">Somente saídas</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="flex justify-end mt-4">
+        <button
+          type="submit"
+          [disabled]="financeiro.invalid || gerando()"
+          class="inline-flex items-center justify-center gap-2 min-w-[150px] min-h-[48px]
+                 px-6 py-3 rounded-xl text-base font-semibold
+                 bg-[var(--accent-yellow)] text-gray-900 border border-transparent
+                 hover:brightness-105 disabled:opacity-60 disabled:cursor-not-allowed
+                 shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)] focus:ring-offset-2"
+        >
+          {{ gerando() ? 'Gerando…' : 'Gerar PDF' }}
+        </button>
+      </div>
+    </form>
+
+    <!-- HOSPEDAGENS -->
+    <form
+      *ngIf="abaAtual === 'hospedagens'"
+      [formGroup]="hospedagens"
+      (ngSubmit)="gerar()"
+      class="grid gap-6"
+    >
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <label class="flex flex-col gap-1 text-xs sm:text-sm min-w-0">
+          <span class="font-medium text-[var(--text-color)]">
+            Data início <span class="text-red-500">*</span>
+          </span>
+          <input
+            class="w-full h-10 sm:h-11
+                   px-2 sm:px-3 rounded-lg
+                   text-xs sm:text-sm outline-none transition
+                   bg-[var(--bg-color)] text-[var(--text-color)]
+                   border border-[var(--border-color)]
+                   focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]
+                   min-w-0 max-w-[260px] sm:max-w-full"
+            type="date"
+            formControlName="dataInicio"
+          />
+        </label>
+
+        <label class="flex flex-col gap-1 text-xs sm:text-sm min-w-0">
+          <span class="font-medium text-[var(--text-color)]">
+            Data fim <span class="text-red-500">*</span>
+          </span>
+          <input
+            class="w-full h-10 sm:h-11
+                   px-2 sm:px-3 rounded-lg
+                   text-xs sm:text-sm outline-none transition
+                   bg-[var(--bg-color)] text-[var(--text-color)]
+                   border border-[var(--border-color)]
+                   focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]
+                   min-w-0 max-w-[260px] sm:max-w-full"
+            type="date"
+            formControlName="dataFim"
+          />
+        </label>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <label class="flex flex-col gap-1 text-xs sm:text-sm">
+          <span class="font-medium text-[var(--text-color)]">Status</span>
+          <select
+            class="w-full h-10 sm:h-11
+                   px-3 rounded-lg
+                   text-xs sm:text-sm outline-none transition appearance-none
+                   bg-[var(--bg-color)] text-[var(--text-color)]
+                   border border-[var(--border-color)]
+                   focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]"
+            formControlName="status"
+          >
+            <option value="TODAS">Todas</option>
+            <option value="ATIVAS">Ativas</option>
+            <option value="INATIVAS">Inativas</option>
+          </select>
+        </label>
+
+        <label class="flex flex-col gap-1 text-xs sm:text-sm">
+          <span class="font-medium text-[var(--text-color)]">Tipo</span>
+          <select
+            class="w-full h-10 sm:h-11
+                   px-3 rounded-lg
+                   text-xs sm:text-sm outline-none transition appearance-none
+                   bg-[var(--bg-color)] text-[var(--text-color)]
+                   border border-[var(--border-color)]
+                   focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]"
+            formControlName="tipo"
+          >
+            <option value="TODOS">Todos</option>
+            <option>Individual</option>
+            <option>Duplo</option>
+            <option>Triplo</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="flex flex-wrap gap-2.5">
+        <button
+          type="button"
+          [ngClass]="chipClasses('hospedagens', 'today')"
+          class="px-4 py-2 text-sm rounded-full transition-all"
+          (click)="onQuick('hospedagens','today')"
+        >
+          Hoje
+        </button>
+
+        <button
+          type="button"
+          [ngClass]="chipClasses('hospedagens', '7d')"
+          class="px-4 py-2 text-sm rounded-full transition-all"
+          (click)="onQuick('hospedagens','7d')"
+        >
+          Últimos 7 dias
+        </button>
+
+        <button
+          type="button"
+          [ngClass]="chipClasses('hospedagens', 'month')"
+          class="px-4 py-2 text-sm rounded-full transition-all"
+          (click)="onQuick('hospedagens','month')"
+        >
+          Mês atual
+        </button>
+      </div>
+
+      <div class="flex justify-end mt-4">
+        <button
+          type="submit"
+          [disabled]="hospedagens.invalid || gerando()"
+          class="inline-flex items-center justify-center gap-2 min-w-[150px] min-h-[48px]
+                 px-6 py-3 rounded-xl text-base font-semibold
+                 bg-[var(--accent-yellow)] text-gray-900 border border-transparent
+                 hover:brightness-105 disabled:opacity-60 disabled:cursor-not-allowed
+                 shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)] focus:ring-offset-2"
+        >
+          {{ gerando() ? 'Gerando…' : 'Gerar PDF' }}
+        </button>
+      </div>
+    </form>
+
+    <!-- QUARTOS -->
+    <form
+      *ngIf="abaAtual === 'quartos'"
+      [formGroup]="quartos"
+      (ngSubmit)="gerar()"
+      class="grid gap-6"
+    >
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <label class="flex flex-col gap-1 text-xs sm:text-sm min-w-0">
+          <span class="font-medium text-[var(--text-color)]">
+            Data início <span class="text-red-500">*</span>
+          </span>
+          <input
+            class="w-full h-10 sm:h-11
+                   px-2 sm:px-3 rounded-lg
+                   text-xs sm:text-sm outline-none transition
+                   bg-[var(--bg-color)] text-[var(--text-color)]
+                   border border-[var(--border-color)]
+                   focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]
+                   min-w-0 max-w-[260px] sm:max-w-full"
+            type="date"
+            formControlName="dataInicio"
+          />
+        </label>
+
+        <label class="flex flex-col gap-1 text-xs sm:text-sm min-w-0">
+          <span class="font-medium text-[var(--text-color)]">
+            Data fim <span class="text-red-500">*</span>
+          </span>
+          <input
+            class="w-full h-10 sm:h-11
+                   px-2 sm:px-3 rounded-lg
+                   text-xs sm:text-sm outline-none transition
+                   bg-[var(--bg-color)] text-[var(--text-color)]
+                   border border-[var(--border-color)]
+                   focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]
+                   min-w-0 max-w-[260px] sm:max-w-full"
+            type="date"
+            formControlName="dataFim"
+          />
+        </label>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <label class="flex flex-col gap-1 text-xs sm:text-sm">
+          <span class="font-medium text-[var(--text-color)]">Status</span>
+          <select
+            class="w-full h-10 sm:h-11
+                   px-3 rounded-lg
+                   text-xs sm:text-sm outline-none transition appearance-none
+                   bg-[var(--bg-color)] text-[var(--text-color)]
+                   border border-[var(--border-color)]
+                   focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]"
+            formControlName="status"
+          >
+            <option value="TODOS">Todos</option>
+            <option>Disponível</option>
+            <option>Ocupado</option>
+            <option>Manutenção</option>
+          </select>
+        </label>
+
+        <label class="flex flex-col gap-1 text-xs sm:text-sm">
+          <span class="font-medium text-[var(--text-color)]">Tipo</span>
+          <select
+            class="w-full h-10 sm:h-11
+                   px-3 rounded-lg
+                   text-xs sm:text-sm outline-none transition appearance-none
+                   bg-[var(--bg-color)] text-[var(--text-color)]
+                   border border-[var(--border-color)]
+                   focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]"
+            formControlName="tipo"
+          >
+            <option value="TODOS">Todos</option>
+            <option>Individual</option>
+            <option>Duplo</option>
+            <option>Triplo</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="flex flex-wrap gap-2.5">
+        <button
+          type="button"
+          [ngClass]="chipClasses('quartos', 'today')"
+          class="px-4 py-2 text-sm rounded-full transition-all"
+          (click)="onQuick('quartos','today')"
+        >
+          Hoje
+        </button>
+
+        <button
+          type="button"
+          [ngClass]="chipClasses('quartos', '7d')"
+          class="px-4 py-2 text-sm rounded-full transition-all"
+          (click)="onQuick('quartos','7d')"
+        >
+          Últimos 7 dias
+        </button>
+
+        <button
+          type="button"
+          [ngClass]="chipClasses('quartos', 'month')"
+          class="px-4 py-2 text-sm rounded-full transition-all"
+          (click)="onQuick('quartos','month')"
+        >
+          Mês atual
+        </button>
+      </div>
+
+      <div class="flex justify-end mt-4">
+        <button
+          type="submit"
+          [disabled]="quartos.invalid || gerando()"
+          class="inline-flex items-center justify-center gap-2 min-w-[150px] min-h-[48px]
+                 px-6 py-3 rounded-xl text-base font-semibold
+                 bg-[var(--accent-yellow)] text-gray-900 border border-transparent
+                 hover:brightness-105 disabled:opacity-60 disabled:cursor-not-allowed
+                 shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)] focus:ring-offset-2"
+        >
+          {{ gerando() ? 'Gerando…' : 'Gerar PDF' }}
+        </button>
+      </div>
+    </form>
+
+    <!-- RESERVAS -->
+    <form
+      *ngIf="abaAtual === 'reservas'"
+      [formGroup]="reservas"
+      (ngSubmit)="gerar()"
+      class="grid gap-6"
+    >
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <label class="flex flex-col gap-1 text-xs sm:text-sm min-w-0">
+          <span class="font-medium text-[var(--text-color)]">
+            Data início <span class="text-red-500">*</span>
+          </span>
+          <input
+            class="w-full h-10 sm:h-11
+                   px-2 sm:px-3 rounded-lg
+                   text-xs sm:text-sm outline-none transition
+                   bg-[var(--bg-color)] text-[var(--text-color)]
+                   border border-[var(--border-color)]
+                   focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]
+                   min-w-0 max-w-[260px] sm:max-w-full"
+            type="date"
+            formControlName="dataInicio"
+          />
+        </label>
+
+        <label class="flex flex-col gap-1 text-xs sm:text-sm min-w-0">
+          <span class="font-medium text-[var(--text-color)]">
+            Data fim <span class="text-red-500">*</span>
+          </span>
+          <input
+            class="w-full h-10 sm:h-11
+                   px-2 sm:px-3 rounded-lg
+                   text-xs sm:text-sm outline-none transition
+                   bg-[var(--bg-color)] text-[var(--text-color)]
+                   border border-[var(--border-color)]
+                   focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]
+                   min-w-0 max-w-[260px] sm:max-w-full"
+            type="date"
+            formControlName="dataFim"
+          />
+        </label>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <label class="flex flex-col gap-1 text-xs sm:text-sm">
+          <span class="font-medium text-[var(--text-color)]">Status</span>
+          <select
+            class="w-full h-10 sm:h-11
+                   px-3 rounded-lg
+                   text-xs sm:text-sm outline-none transition appearance-none
+                   bg-[var(--bg-color)] text-[var(--text-color)]
+                   border border-[var(--border-color)]
+                   focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]"
+            formControlName="status"
+          >
+            <option value="TODAS">Todas</option>
+            <option value="PENDENTE">Pendente</option>
+            <option value="CONFIRMADA">Confirmada</option>
+            <option value="CANCELADA">Cancelada</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="flex flex-wrap gap-2.5">
+        <button
+          type="button"
+          [ngClass]="chipClasses('reservas', 'today')"
+          class="px-4 py-2 text-sm rounded-full transition-all"
+          (click)="onQuick('reservas','today')"
+        >
+          Hoje
+        </button>
+
+        <button
+          type="button"
+          [ngClass]="chipClasses('reservas', '7d')"
+          class="px-4 py-2 text-sm rounded-full transition-all"
+          (click)="onQuick('reservas','7d')"
+        >
+          Últimos 7 dias
+        </button>
+
+        <button
+          type="button"
+          [ngClass]="chipClasses('reservas', 'month')"
+          class="px-4 py-2 text-sm rounded-full transition-all"
+          (click)="onQuick('reservas','month')"
+        >
+          Mês atual
+        </button>
+      </div>
+
+      <div class="flex justify-end mt-4">
+        <button
+          type="submit"
+          [disabled]="reservas.invalid || gerando()"
+          class="inline-flex items-center justify-center gap-2 min-w-[150px] min-h-[48px]
+                 px-6 py-3 rounded-xl text-base font-semibold
+                 bg-[var(--accent-yellow)] text-gray-900 border border-transparent
+                 hover:brightness-105 disabled:opacity-60 disabled:cursor-not-allowed
+                 shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)] focus:ring-offset-2"
+        >
+          {{ gerando() ? 'Gerando…' : 'Gerar PDF' }}
+        </button>
+      </div>
+    </form>
+
+  </section>
+</div>

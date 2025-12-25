@@ -1,0 +1,77 @@
+<div
+  class="min-h-screen"
+  [ngClass]="{ 'bg-cinza-claro': mostrarNavbar }"
+>
+  <app-navbar
+    *ngIf="mostrarNavbar"
+    (sidebarCollapsedChange)="handleSidebarCollapsedChange($event)"
+    class="
+      fixed top-0 left-0 right-0 z-40 w-full h-16
+      md:h-auto md:inset-y-0 md:left-0 md:right-auto md:w-auto
+    "
+  >
+  </app-navbar>
+
+  <div
+    class="flex min-h-screen flex-col transition-all duration-300"
+    [ngClass]="{
+      'pt-16 md:pt-0': mostrarNavbar,
+      'md:ml-64': mostrarNavbar && !sidebarCollapsed,
+      'md:ml-20': mostrarNavbar && sidebarCollapsed,
+      'pt-0': !mostrarNavbar
+    }"
+  >
+    <header
+      *ngIf="mostrarNavbar"
+      class="
+        sticky top-0 z-10 flex items-center 
+        justify-end md:justify-end
+        px-2 md:px-4
+        py-2 bg-transparent
+        -mt-15 md:mt-0
+      "
+    >
+      <app-user-menu
+        (openProfile)="handleOpenProfile()"
+        (openPassword)="handleOpenPassword()"
+        (openNotifications)="handleOpenNotifications()"
+      >
+      </app-user-menu>
+    </header>
+
+  <main
+      class="flex-1"
+      [ngClass]="{
+        'px-4 md:px-10 py-0': mostrarNavbar,
+        'px-2 py-0': !mostrarNavbar
+      }"
+    >
+      <router-outlet></router-outlet>
+    </main>
+
+  </div>
+</div>
+
+<ui-toast-container></ui-toast-container>
+
+<app-force-password-change-modal
+  *ngIf="modalOpen$ | async"
+></app-force-password-change-modal>
+
+<app-notifications-modal
+  [open]="notificacoesModalOpen()"
+  (close)="handleCloseNotifications()"
+>
+</app-notifications-modal>
+
+<app-perfil-dados-modal
+  [open]="perfilModalOpen()"
+  (close)="handleCloseProfile()"
+>
+</app-perfil-dados-modal>
+
+<app-perfil-senha-modal
+  [open]="senhaModalOpen()"
+  (close)="handleClosePassword()"
+>
+</app-perfil-senha-modal>

@@ -1,0 +1,371 @@
+<div
+  *ngIf="open"
+  class="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-6"
+  (click)="fechar()"
+>
+  <div
+    class="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl shadow-xl border
+           bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-color)]"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Alerta de troca obrigatória -->
+    <div
+      *ngIf="trocaObrigatoria"
+      class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4"
+    >
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              fill-rule="evenodd"
+              d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm">
+            <strong>Troca de senha obrigatória</strong><br />
+            Você precisa definir uma nova senha para continuar.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cabeçalho -->
+    <div class="border-b p-4 sm:p-5 border-[var(--border-color)]">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg sm:text-xl font-bold text-[var(--text-color)]">
+          Alterar senha
+        </h2>
+
+        <button
+          type="button"
+          (click)="fechar()"
+          class="p-1 rounded-full transition
+                 text-[var(--text-dim)]
+                 hover:bg-[var(--table-row-hover)] hover:text-red-500
+                 focus:outline-none focus:ring-2 focus:ring-red-300"
+          aria-label="Fechar modal de senha"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Corpo -->
+    <div class="p-4 sm:p-5">
+      <form [formGroup]="form" (ngSubmit)="salvar()" class="space-y-4">
+        <!-- Senha Atual (apenas quando NÃO for troca obrigatória) -->
+        <div *ngIf="!trocaObrigatoria">
+          <label class="block text-sm font-medium mb-2 text-[var(--text-dim)]">
+            Senha atual
+          </label>
+
+          <div class="relative">
+            <input
+              [type]="passwordFields['senhaAtual'].visible ? 'text' : 'password'"
+              formControlName="senhaAtual"
+              class="w-full px-3 py-2.5 pr-10 text-sm rounded-lg border outline-none transition
+                     bg-[var(--bg-color)] text-[var(--text-color)]
+                     border-[var(--border-color)]
+                     focus:ring-2 focus:ring-[var(--accent-yellow)]
+                     focus:border-[var(--accent-yellow)]"
+              placeholder="Digite sua senha atual"
+            />
+
+            <button
+              type="button"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center transition
+                     text-[var(--text-dim)] hover:text-[var(--text-color)]"
+              (click)="togglePasswordVisibility('senhaAtual')"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  *ngIf="!passwordFields['senhaAtual'].visible"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+                <path
+                  *ngIf="passwordFields['senhaAtual'].visible"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div
+            class="mt-1 text-xs text-red-600"
+            *ngIf="form.get('senhaAtual')?.touched && form.get('senhaAtual')?.invalid"
+          >
+            Informe sua senha atual.
+          </div>
+        </div>
+
+        <!-- Nova Senha -->
+        <div>
+          <label class="block text-sm font-medium mb-2 text-[var(--text-dim)]">
+            Nova senha
+          </label>
+
+          <div class="relative">
+            <input
+              [type]="passwordFields['novaSenha'].visible ? 'text' : 'password'"
+              formControlName="novaSenha"
+              class="w-full px-3 py-2.5 pr-10 text-sm rounded-lg border outline-none transition
+                     bg-[var(--bg-color)] text-[var(--text-color)]
+                     border-[var(--border-color)]
+                     focus:ring-2 focus:ring-[var(--accent-yellow)]
+                     focus:border-[var(--accent-yellow)]"
+              placeholder="Digite a nova senha"
+            />
+
+            <button
+              type="button"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center transition
+                     text-[var(--text-dim)] hover:text-[var(--text-color)]"
+              (click)="togglePasswordVisibility('novaSenha')"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  *ngIf="!passwordFields['novaSenha'].visible"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+                <path
+                  *ngIf="passwordFields['novaSenha'].visible"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Indicador de força -->
+          <div class="mt-2" *ngIf="form.get('novaSenha')?.value">
+            <div class="flex items-center space-x-2 mb-1">
+              <div
+                class="h-1 w-1/4 rounded-full"
+                [ngClass]="{
+                  'bg-red-500'   : getPasswordStrength() === 'fraca',
+                  'bg-gray-300 dark:bg-gray-700' : getPasswordStrength() !== 'fraca'
+                }"
+              ></div>
+              <div
+                class="h-1 w-1/4 rounded-full"
+                [ngClass]="{
+                  'bg-yellow-500': getPasswordStrength() === 'media',
+                  'bg-gray-300 dark:bg-gray-700' : getPasswordStrength() !== 'media'
+                }"
+              ></div>
+              <div
+                class="h-1 w-1/4 rounded-full"
+                [ngClass]="{
+                  'bg-green-500': getPasswordStrength() === 'forte',
+                  'bg-gray-300 dark:bg-gray-700' : getPasswordStrength() !== 'forte'
+                }"
+              ></div>
+            </div>
+
+            <p class="text-xs text-[var(--text-dim)]">
+              Força da senha:
+              <span
+                [ngClass]="{
+                  'text-red-500'    : getPasswordStrength() === 'fraca',
+                  'text-yellow-500' : getPasswordStrength() === 'media',
+                  'text-green-500'  : getPasswordStrength() === 'forte'
+                }"
+              >
+                {{ getPasswordStrengthText() }}
+              </span>
+            </p>
+          </div>
+
+          <div
+            class="mt-1 text-xs text-red-600"
+            *ngIf="
+              form.get('novaSenha')?.touched &&
+              form.get('novaSenha')?.invalid
+            "
+          >
+            <span *ngIf="form.get('novaSenha')?.errors?.['required']">
+              Senha obrigatória.
+            </span>
+            <span *ngIf="form.get('novaSenha')?.errors?.['minlength']">
+              Mínimo 5 caracteres.
+            </span>
+            <span *ngIf="form.get('novaSenha')?.errors?.['digito']">
+              Precisa ter ao menos 1 número.
+            </span>
+          </div>
+
+          <!-- Dicas -->
+          <div class="mt-2 text-xs text-[var(--text-dim)]">
+            <p class="font-medium mb-1 text-[var(--text-color)]">
+              Sua senha deve conter:
+            </p>
+            <ul class="list-disc list-inside space-y-1">
+              <li
+                [ngClass]="{
+                  'text-green-500':
+                    (form.get('novaSenha')?.value || '').length >= 5
+                }"
+              >
+                Pelo menos 5 caracteres
+              </li>
+              <li
+                [ngClass]="{
+                  'text-green-500': hasDigit()
+                }"
+              >
+                Pelo menos 1 número
+              </li>
+              <li
+                [ngClass]="{
+                  'text-green-500': hasSpecialChar()
+                }"
+              >
+                Pelo menos 1 caractere especial (!&#64;#$%&amp;*)
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Confirmar Senha -->
+        <div>
+          <label class="block text-sm font-medium mb-2 text-[var(--text-dim)]">
+            Confirmar senha
+          </label>
+
+          <div class="relative">
+            <input
+              [type]="passwordFields['confirmarSenha'].visible ? 'text' : 'password'"
+              formControlName="confirmarSenha"
+              class="w-full px-3 py-2.5 pr-10 text-sm rounded-lg border outline-none transition
+                     bg-[var(--bg-color)] text-[var(--text-color)]
+                     border-[var(--border-color)]
+                     focus:ring-2 focus:ring-[var(--accent-yellow)]
+                     focus:border-[var(--accent-yellow)]"
+              placeholder="Confirme a nova senha"
+            />
+
+            <button
+              type="button"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center transition
+                     text-[var(--text-dim)] hover:text-[var(--text-color)]"
+              (click)="togglePasswordVisibility('confirmarSenha')"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  *ngIf="!passwordFields['confirmarSenha'].visible"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+                <path
+                  *ngIf="passwordFields['confirmarSenha'].visible"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div
+            class="mt-1 text-xs text-red-600"
+            *ngIf="form.touched && form.errors?.['mismatch']"
+          >
+            As senhas não coincidem.
+          </div>
+
+          <div
+            class="mt-1 text-xs text-green-600"
+            *ngIf="
+              form.get('confirmarSenha')?.value &&
+              !form.errors?.['mismatch']
+            "
+          >
+            ✓ Senhas coincidem
+          </div>
+        </div>
+
+        <!-- Botões -->
+        <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+          <button
+            type="button"
+            (click)="fechar()"
+            class="px-4 py-2.5 text-sm font-medium rounded-lg transition order-2 sm:order-1
+                   border bg-[var(--table-row-hover)] text-[var(--text-color)]
+                   border-[var(--border-color)]
+                   hover:bg-[var(--table-row-hover)]/80"
+          >
+            Fechar
+          </button>
+
+          <button
+            type="submit"
+            [disabled]="salvando() || form.invalid"
+            class="px-4 py-2.5 text-sm font-medium rounded-lg transition flex items-center justify-center gap-2 order-1 sm:order-2
+                   text-white bg-green-600 hover:bg-green-700
+                   disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg
+              *ngIf="salvando()"
+              class="w-4 h-4 animate-spin"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                d="M21 12a9 9 0 1 1-6.219-8.56"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+
+            <svg
+              *ngIf="!salvando()"
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+
+            {{ salvando() ? 'Alterando...' : 'Alterar senha' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

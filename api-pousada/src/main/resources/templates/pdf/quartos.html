@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8"/>
+
+    <style>
+        /* ✅ Reserva espaço pro footer (margem inferior maior) */
+        @page { size: A4; margin: 18mm 14mm 26mm 14mm; }
+
+        * { box-sizing: border-box; }
+
+        body{
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            font-weight: 400;
+            color:#111;
+            margin:0;
+            padding:0;
+            line-height:1.35;
+        }
+
+        .container{ width:100%; }
+        .avoid-break{ page-break-inside: avoid; }
+        .muted{ color:#555; }
+
+        /* ===== RAID ===== */
+        .header{
+            border-bottom:2px solid #111;
+            padding-bottom:10px;
+            margin-bottom:12px;
+            display:table;
+            width:100%;
+        }
+        .header-left,.header-right{ display:table-cell; vertical-align:middle; }
+        .header-left{ width:65%; }
+        .header-right{ width:35%; text-align:right; }
+
+        .brand{ display:table; width:100%; }
+        .brand-logo,.brand-text{ display:table-cell; vertical-align:middle; }
+        .brand-logo{ width:78px; }
+
+        .logo{
+            width:64px;
+            height:64px;
+            border-radius:14px;
+            border:1px solid #e5e7eb;
+            display:block;
+        }
+
+        .brand-title{
+            font-size:14px;
+            font-weight:600;
+            margin:0;
+        }
+        .brand-subtitle{
+            font-size:11px;
+            color:#555;
+            margin-top:2px;
+        }
+
+        .report-title{
+            font-size:18px;
+            font-weight:600;
+            margin:0;
+        }
+        .report-chip{
+            display:inline-block;
+            margin-top:6px;
+            padding:3px 10px;
+            font-size:10px;
+            border:1px solid #e5e7eb;
+            border-radius:999px;
+            background:#f8fafc;
+        }
+
+        .meta{
+            margin:10px 0 16px;
+            padding:12px;
+            border:1px solid #e5e7eb;
+            border-radius:12px;
+            background:#fafafa;
+        }
+        .meta-row{ display:table; width:100%; }
+        .meta-item{ display:table-cell; width:33.33%; }
+
+        .meta-label{
+            font-size:10px;
+            text-transform:uppercase;
+            color:#666;
+            margin-bottom:4px;
+        }
+        .meta-value{
+            font-size:12px;
+            font-weight:600;
+        }
+        .meta-muted{
+            font-size:11px;
+            color:#555;
+            margin-top:4px;
+        }
+
+        /* ===== SECTIONS ===== */
+        .section-title{
+            font-size:13px;
+            font-weight:600;
+            margin:14px 0 8px;
+            padding-left:10px;
+            border-left:3px solid #111;
+        }
+
+        /* ===== KPI ===== */
+        .kpi-grid{
+            display:table;
+            width:100%;
+            table-layout:fixed;
+            border-spacing:10px;
+            margin-bottom:10px;
+        }
+        .kpi{
+            display:table-cell;
+            padding:12px;
+            border:1px solid #e5e7eb;
+            border-radius:12px;
+            background:#fff;
+        }
+        .kpi-title{
+            font-size:10px;
+            text-transform:uppercase;
+            color:#666;
+            margin-bottom:6px;
+        }
+        .kpi-value{
+            font-size:14px;
+            font-weight:600;
+        }
+        .kpi-hint{
+            font-size:10px;
+            color:#666;
+            margin-top:6px;
+        }
+
+        /* ===== TABLE ===== */
+        table{
+            width:100%;
+            border-collapse:collapse;
+            border:1px solid #e5e7eb;
+            table-layout:fixed;
+        }
+        th,td{
+            padding:8px;
+            font-size:11px;
+            border-bottom:1px solid #e5e7eb;
+            word-break: break-word;
+        }
+        th{
+            background:#f3f4f6;
+            font-weight:500;
+            text-align:left;
+        }
+        tbody tr:nth-child(even) td{ background:#fafafa; }
+        .center{ text-align:center; }
+
+        /* ✅ Evita linha/título ficar isolado no fim da página */
+        thead { display: table-header-group; }
+        tfoot { display: table-footer-group; }
+        tr { page-break-inside: avoid; }
+
+        /* ===== FOOTER (FICA SEMPRE NO FINAL DE CADA PÁGINA) ===== */
+        .pdf-footer{
+            position: fixed;
+            left:14mm;
+            right:14mm;
+            bottom:10mm;
+
+            border-top:1px solid #e5e7eb;
+            padding-top:6px;
+            font-size:10px;
+            color:#666;
+
+            /* ✅ garante que conteúdo não “brigue” com floats */
+            display:block;
+        }
+        .footer-left{ float:left; }
+        .footer-center{ float:left; margin-left:18px; }
+        .footer-right{ float:right; }
+        .sep{ margin:0 6px; color:#999; }
+        .clearfix::after{ content:""; display:block; clear:both; }
+
+        .page-number:before{ content: counter(page); }
+        .page-count:before{ content: counter(pages); }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <!-- RAID (PADRÃO GLOBAL) -->
+    <div th:replace="pdf/fragments/raid :: raid(
+      'Relatório de Quartos',
+      'Resumo de ocupação e disponibilidade',
+      ${r},
+      ${pousadaNome},
+      ${pousadaSubtitulo}
+  )"></div>
+
+    <!-- KPIs -->
+    <div class="section-title">Indicadores principais</div>
+
+    <div class="kpi-grid avoid-break">
+        <div class="kpi">
+            <p class="kpi-title">Total de quartos</p>
+            <p class="kpi-value" th:text="${r.resumo.totalQuartos}">0</p>
+            <div class="kpi-hint">Quartos cadastrados.</div>
+        </div>
+
+        <div class="kpi">
+            <p class="kpi-title">Quarto mais ocupado</p>
+            <p class="kpi-value" th:text="${r.resumo.maisOcupado}">-</p>
+            <div class="kpi-hint">Maior ocupação no período.</div>
+        </div>
+
+        <div class="kpi">
+            <p class="kpi-title">Ocupação média (%)</p>
+            <p class="kpi-value">
+                <span th:text="${#numbers.formatDecimal(r.resumo.ocupacaoMedia,1,'POINT',2,'COMMA')}">0,00</span>%
+            </p>
+            <div class="kpi-hint">Percentual médio.</div>
+        </div>
+
+        <div class="kpi">
+            <p class="kpi-title">Total listado</p>
+            <p class="kpi-value" th:text="${#lists.size(r.linhas)}">0</p>
+            <div class="kpi-hint">Quartos retornados.</div>
+        </div>
+    </div>
+
+    <!-- TABELA -->
+    <div class="section-title">Quartos</div>
+
+    <table>
+        <thead>
+        <tr>
+            <th style="width:20%;">Número</th>
+            <th style="width:30%;">Tipo</th>
+            <th style="width:25%;">Valor diária (R$)</th>
+            <th style="width:25%;">Status</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="l : ${r.linhas}">
+            <td th:text="${l.numero}">101</td>
+            <td th:text="${l.tipo}">Individual</td>
+            <td th:text="${#numbers.formatDecimal(l.valorDiaria,1,'POINT',2,'COMMA')}">0,00</td>
+            <td th:text="${l.status}">DISPONÍVEL</td>
+        </tr>
+
+        <tr th:if="${#lists.isEmpty(r.linhas)}">
+            <td colspan="4" class="center muted" style="padding:12px;">
+                Sem quartos no período.
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<!-- ✅ FOOTER PADRÃO GLOBAL (fixo, repete em todas as páginas) -->
+<div th:replace="pdf/fragments/footer :: footer(
+  ${pousadaNome},
+  ${r.geradoEm},
+  ${r.geradoPor}
+)"></div>
+
+</body>
+</html>

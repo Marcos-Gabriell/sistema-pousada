@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<body>
+
+<div th:fragment="footer(pousadaNome, geradoEm, geradoPor)">
+
+    <div class="pdf-footer">
+        <div class="footer-left">
+            <span th:text="${pousadaNome}">Pousada do Brejo</span>
+            <span class="sep">•</span>
+            <span>Sistema de Gestão</span>
+        </div>
+
+        <div class="footer-center">
+            Gerado em
+            <span th:text="${#temporals.format(geradoEm,'dd/MM/yyyy HH:mm')}">13/12/2025 17:10</span>
+            <span class="sep">•</span>
+            <span th:text="${geradoPor}">ADMIN</span>
+        </div>
+
+        <div class="footer-right">
+            Página <span class="page-number"></span> de <span class="page-count"></span>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

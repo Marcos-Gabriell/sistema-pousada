@@ -1,0 +1,1037 @@
+<div
+  class="p-4 sm:p-6 w-full max-w-5xl 2xl:max-w-6xl mx-auto flex flex-col items-center
+         text-[var(--text-color)]"
+>
+  <div
+    class="flex flex-col gap-3 items-center w-full
+           sm:flex-row sm:items-center sm:justify-between
+           mb-8 mt-8 sm:mt-0"
+  >
+    <div class="text-center sm:text-left w-full sm:w-auto">
+      <h1 class="text-2xl sm:text-3xl font-bold text-[var(--text-color)]">
+        Quartos
+      </h1>
+      <p class="text-base mt-1 hidden sm:block text-[var(--text-dim)]">
+        Gerencie todos os quartos da pousada. Consulte status, tipo, valores e edite facilmente.
+      </p>
+    </div>
+
+    <button
+      (click)="abrirNovoQuarto()"
+      type="button"
+      aria-label="Novo Quarto"
+      [disabled]="carregandoLista || estaCarregandoAcao"
+      class="flex items-center justify-center gap-2 font-semibold
+             px-3 py-2 text-base rounded-xl shadow transition
+             sm:px-8 sm:py-3 sm:text-lg sm:w-auto w-auto
+             bg-[var(--accent-yellow)] hover:brightness-110 text-gray-900
+             disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Novo Quarto
+    </button>
+  </div>
+  <div
+    class="w-full flex flex-col sm:flex-row sm:items-center justify-between
+           mb-6 sm:mt-[-0.5rem] sm:gap-3"
+  >
+    <div class="w-full sm:max-w-[840px]">
+      <label class="sr-only">Buscar por número ou nome</label>
+      <input
+        type="text"
+        [(ngModel)]="filtro.termo"
+        (ngModelChange)="onBuscarChange()"
+        placeholder="Buscar por número ou nome"
+        aria-label="Buscar por número ou nome"
+        [disabled]="carregandoLista || estaCarregandoAcao"
+        class="w-full px-4 sm:px-6 py-3 rounded-lg text-sm sm:text-base outline-none transition
+               bg-[var(--bg-color)] text-[var(--text-color)]
+               border border-[var(--border-color)]
+               focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]
+               disabled:opacity-50"
+      />
+    </div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mt-2 sm:mt-0">
+      <div class="w-full sm:w-36 md:w-40">
+        <label class="sr-only">Filtro de Status</label>
+        <select
+          [(ngModel)]="filtro.status"
+          (change)="buscar()"
+          aria-label="Filtro de Status"
+          [disabled]="carregandoLista || estaCarregandoAcao"
+          class="w-full px-4 sm:px-5 pr-9 py-3 rounded-lg text-sm sm:text-base outline-none transition appearance-none
+                 bg-[var(--bg-color)] text-[var(--text-color)]
+                 border border-[var(--border-color)]
+                 focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]
+                 disabled:opacity-50"
+        >
+          <option value="">Status</option>
+          <option *ngFor="let s of status" [value]="s">{{ s | titlecase }}</option>
+        </select>
+      </div>
+
+      <div class="w-full sm:w-28">
+        <label class="sr-only">Filtro de Tipo</label>
+        <select
+          [(ngModel)]="filtro.tipo"
+          (change)="buscar()"
+          aria-label="Filtro de Tipo"
+          [disabled]="carregandoLista || estaCarregandoAcao"
+          class="w-full px-4 sm:px-5 py-3 rounded-lg text-sm sm:text-base outline-none transition appearance-none
+                 bg-[var(--bg-color)] text-[var(--text-color)]
+                 border border-[var(--border-color)]
+                 focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]
+                 disabled:opacity-50"
+        >
+          <option value="">Tipo</option>
+          <option *ngFor="let t of tipos" [value]="t">{{ t | titlecase }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div
+    class="hidden sm:block rounded-2xl shadow p-2 sm:p-4 w-full overflow-x-auto min-h-[120px]
+           bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-color)]"
+  >
+    <div class="hidden sm:block min-w-[320px] w-full">
+      <table
+        class="w-full text-[13px] sm:text-base text-[var(--text-color)]"
+        role="table"
+        aria-label="Tabela de quartos"
+      >
+        <thead>
+          <tr
+            class="border-b-2 border-[var(--border-color)] uppercase text-[11px] sm:text-xs
+                   text-[var(--text-dim)]"
+          >
+            <th class="py-1 px-2 sm:py-3 sm:px-4 text-left font-semibold">Número</th>
+            <th class="py-1 px-2 sm:py-3 sm:px-4 text-center hidden md:table-cell font-semibold">
+              Nome/Identificação
+            </th>
+            <th class="py-1 px-2 sm:py-3 sm:px-4 text-center hidden md:table-cell font-semibold">
+              Tipo
+            </th>
+            <th class="py-1 px-2 sm:py-3 sm:px-4 text-center hidden md:table-cell font-semibold">
+              Valor Diária
+            </th>
+            <th class="py-1 px-2 sm:py-3 sm:px-4 text-center hidden md:table-cell font-semibold">
+              Status
+            </th>
+            <th class="py-1 px-2 sm:py-3 sm:px-4 text-center font-semibold">Ações</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngIf="carregandoLista">
+            <td colspan="6" class="py-10 text-center text-[var(--text-dim)]">
+              <div
+                class="flex flex-col items-center justify-center gap-2"
+                aria-live="polite"
+                aria-busy="true"
+              >
+                <div class="relative">
+                  <div
+                    class="w-8 h-8 border-4 border-[var(--accent-yellow)] border-t-transparent
+                           rounded-full animate-spin"
+                  ></div>
+                </div>
+                <p class="text-sm sm:text-base">
+                  Carregando quartos, aguarde...
+                </p>
+              </div>
+            </td>
+          </tr>
+          <tr
+            *ngFor="let q of quartosPaginados"
+            class="transition
+                   odd:bg-[var(--bg-card)] even:bg-[color-mix(in_rgb(var(--bg-card)),_rgb(0_0_0/_5%))]
+                   hover:bg-[var(--table-row-hover)]"
+          >
+            <td
+              class="py-2 px-2 sm:py-3 sm:px-4 font-bold text-left text-[13.5px] sm:text-base
+                     text-[var(--text-color)]"
+            >
+              {{ q.numero }}
+            </td>
+
+            <td
+              class="py-2 px-2 sm:py-3 sm:px-4 text-center hidden md:table-cell
+                     text-[var(--text-color)]"
+            >
+              {{ q.nome || '—' }}
+            </td>
+
+            <td
+              class="py-2 px-2 sm:py-3 sm:px-4 text-center hidden md:table-cell
+                     text-[var(--text-color)]"
+            >
+              {{ q.tipo | titlecase }}
+            </td>
+
+            <td
+              class="py-2 px-2 sm:py-3 sm:px-4 text-center hidden md:table-cell
+                     text-[var(--text-color)]"
+            >
+              R$ {{ q.valorDiaria || 0 | number: '1.2-2' }}
+            </td>
+
+            <td class="py-2 px-2 sm:py-3 sm:px-4 text-center hidden md:table-cell">
+              <span
+                class="inline-flex items-center px-2 sm:px-3 py-1 rounded-full
+                       text-[11px] sm:text-sm font-semibold"
+                [ngClass]="{
+                  'bg-green-100 text-green-800': q.status === 'DISPONIVEL',
+                  'bg-yellow-100 text-yellow-800': q.status === 'MANUTENCAO',
+                  'bg-red-100 text-red-700': q.status === 'OCUPADO'
+                }"
+              >
+                {{
+                  q.status === 'DISPONIVEL' ? 'Disponível' :
+                  q.status === 'MANUTENCAO' ? 'Manutenção' :
+                  q.status === 'OCUPADO' ? 'Ocupado' : q.status
+                }}
+              </span>
+            </td>
+
+            <td class="py-2 px-2 sm:py-3 sm:px-4 text-center">
+              <div class="flex flex-wrap gap-1 sm:gap-2 justify-center items-center">
+                <button
+                  *ngIf="q.status !== 'OCUPADO'"
+                  (click)="editar(q)"
+                  type="button"
+                  aria-label="Editar"
+                  title="Editar"
+                  [disabled]="estaCarregandoAcao"
+                  class="inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10
+                         rounded-full transition
+                         hover:bg-[var(--table-row-hover)] hover:ring-2 hover:ring-yellow-400
+                         focus:outline-none focus:ring-yellow-400 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z" />
+                  </svg>
+                </button>
+
+                <button
+                  (click)="detalhes(q)"
+                  type="button"
+                  aria-label="Detalhes"
+                  title="Detalhes"
+                  [disabled]="estaCarregandoAcao"
+                  class="inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10
+                         rounded-full transition
+                         hover:bg-[var(--table-row-hover)] hover:ring-2 hover:ring-blue-500
+                         focus:outline-none focus:ring-blue-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-4M12 8h.01" />
+                  </svg>
+                </button>
+
+                <button
+                  *ngIf="q.status !== 'OCUPADO'"
+                  (click)="abrirModalExcluir(q)"
+                  type="button"
+                  aria-label="Excluir"
+                  title="Excluir"
+                  [disabled]="estaCarregandoAcao"
+                  class="inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10
+                         rounded-full transition
+                         hover:bg-[var(--table-row-hover)] hover:ring-2 hover:ring-red-500
+                         focus:outline-none focus:ring-red-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="!carregandoLista && quartosPaginados.length === 0">
+            <td colspan="6" class="py-12">
+              <div
+                class="flex flex-col items-center justify-center text-center gap-3
+                       text-[var(--text-dim)]"
+              >
+                <svg
+                  class="w-12 h-12 text-[var(--border-color)]"
+                  viewBox="0 0 48 48"
+                  fill="none"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M8 18v16" stroke-width="3" stroke-linecap="round"/>
+                  <rect x="8" y="22" width="32" height="10" rx="2" stroke-width="3"/>
+                  <rect x="11" y="18" width="8" height="6" rx="2" stroke-width="3"/>
+                  <path d="M8 34v6M40 34v6" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+                <p class="text-lg sm:text-xl font-semibold text-[var(--text-color)]">
+                  Nenhum quarto encontrado
+                </p>
+                <p class="max-w-md text-sm sm:text-base">
+                  Ajuste os filtros de pesquisa ou crie um novo quarto para começar.
+                </p>
+                <button
+                  type="button"
+                  (click)="abrirNovoQuarto()"
+                  class="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold
+                         bg-[var(--accent-yellow)] hover:brightness-110 text-gray-900"
+                  aria-label="Criar Quarto"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                  </svg>
+                  Criar Quarto
+                </button>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+
+        <tfoot>
+          <tr class="border-t border-[var(--border-color)] text-sm text-[var(--text-color)]">
+            <td colspan="6" class="px-4 sm:px-5 py-3">
+              <div class="flex items-center justify-between">
+                <div>Total: {{ quartos.length }} quarto(s)</div>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+  <div class="sm:hidden w-full" *ngIf="carregandoLista">
+    <div class="rounded-2xl shadow p-2 bg-[var(--bg-card)] border border-[var(--border-color)] w-full">
+      <div class="flex flex-col items-center justify-center gap-2 py-10" aria-live="polite" aria-busy="true">
+        <div class="relative">
+          <div class="w-8 h-8 border-4 border-[var(--accent-yellow)] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <p class="text-sm sm:text-base">Carregando quartos, aguarde...</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sm:hidden w-full" *ngIf="!carregandoLista">
+    <div class="rounded-2xl shadow p-2 bg-[var(--bg-card)] border border-[var(--border-color)] space-y-3">
+      <ng-container *ngIf="quartosPaginados.length > 0; else nenhumQuartoMobile">
+        <div *ngFor="let q of quartosPaginados" class="relative rounded-xl shadow-sm p-3 border bg-[var(--bg-card)] border-[var(--border-color)]">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <span class="text-xs font-semibold uppercase text-[var(--text-dim)]">Quarto</span>
+              <div class="text-xl font-bold text-[var(--text-color)]">{{ q.numero }}</div>
+              <div class="text-sm truncate max-w-[150px] text-[var(--text-dim)]" [title]="q.nome || '—'">{{ q.nome || '—' }}</div>
+            </div>
+
+            <div class="text-right -mr-1">
+              <span
+                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
+                [ngClass]="{
+                  'bg-green-100 text-green-800': q.status === 'DISPONIVEL',
+                  'bg-yellow-100 text-yellow-800': q.status === 'MANUTENCAO',
+                  'bg-red-100 text-red-700': q.status === 'OCUPADO'
+                }"
+              >
+                {{ q.status === 'DISPONIVEL' ? 'Disponível' : q.status === 'MANUTENCAO' ? 'Manutenção' : q.status === 'OCUPADO' ? 'Ocupado' : q.status }}
+              </span>
+            </div>
+          </div>
+
+          <div class="border-t border-dashed border-[var(--border-color)] pt-2 flex justify-end">
+            <div class="flex flex-wrap gap-1 justify-end items-center -mr-1">
+              <button
+                *ngIf="q.status !== 'OCUPADO'"
+                (click)="editar(q)"
+                type="button"
+                title="Editar"
+                aria-label="Editar"
+                [disabled]="estaCarregandoAcao"
+                class="inline-flex items-center justify-center w-8 h-8 rounded-full transition hover:bg-[var(--table-row-hover)] hover:ring-2 hover:ring-yellow-400 focus:ring-yellow-400 focus:outline-none focus:ring-offset-1 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z" />
+                </svg>
+              </button>
+
+              <button
+                (click)="detalhes(q)"
+                type="button"
+                title="Detalhes"
+                aria-label="Detalhes"
+                [disabled]="estaCarregandoAcao"
+                class="inline-flex items-center justify-center w-8 h-8 rounded-full transition hover:bg-[var(--table-row-hover)] hover:ring-2 hover:ring-blue-500 focus:ring-blue-500 focus:outline-none focus:ring-offset-1"
+              >
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-4M12 8h.01" />
+                </svg>
+              </button>
+
+              <button
+                *ngIf="q.status !== 'OCUPADO'"
+                (click)="abrirModalExcluir(q)"
+                type="button"
+                title="Excluir"
+                aria-label="Excluir"
+                [disabled]="estaCarregandoAcao"
+                class="inline-flex items-center justify-center w-8 h-8 rounded-full transition hover:bg-[var(--table-row-hover)] hover:ring-2 hover:ring-red-500 focus:ring-red-500 focus:outline-none focus:ring-offset-1 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #nenhumQuartoMobile>
+        <div class="rounded-xl shadow-sm p-6 text-center border bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-color)]">
+          <svg class="w-12 h-12 mx-auto mb-3 text-[var(--border-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <div class="font-semibold text-lg text-[var(--text-color)] mb-1">Nenhum quarto encontrado</div>
+          <div class="text-sm text-[var(--text-dim)] mb-4">Ajuste os filtros de pesquisa ou crie um novo quarto.</div>
+          <button (click)="abrirNovoQuarto()" type="button" class="mt-3 flex items-center gap-2 font-semibold px-4 py-2 text-sm rounded-lg shadow transition w-full max-w-xs mx-auto bg-[var(--accent-yellow)] hover:brightness-110 text-gray-900">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Novo Quarto
+          </button>
+        </div>
+      </ng-template>
+
+      <div class="border-t border-[var(--border-color)] text-sm pt-3 px-1 font-semibold text-[var(--text-color)]">
+        Total: {{ quartos.length }} quarto(s)
+      </div>
+    </div>
+  </div>
+  <div
+    class="flex justify-center items-center mt-6 gap-4 w-full text-[var(--text-color)]"
+    *ngIf="totalPages > 1"
+  >
+    <button
+      (click)="paginaAnterior()"
+      [disabled]="page === 1 || carregandoLista || estaCarregandoAcao"
+      type="button"
+      class="px-4 py-2 rounded-lg font-semibold disabled:opacity-50
+             bg-[var(--bg-card)] text-[var(--text-color)]
+             border border-[var(--border-color)]
+             hover:bg-[var(--table-row-hover)]
+             focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]"
+    >
+      Anterior
+    </button>
+
+    <span class="font-semibold text-sm sm:text-base text-[var(--text-color)]">
+      Página {{ page }} de {{ totalPages }}
+    </span>
+
+    <button
+      (click)="proximaPagina()"
+      [disabled]="page === totalPages || carregandoLista || estaCarregandoAcao"
+      type="button"
+      class="px-4 py-2 rounded-lg font-semibold disabled:opacity-50
+             bg-[var(--bg-card)] text-[var(--text-color)]
+             border border-[var(--border-color)]
+             hover:bg-[var(--table-row-hover)]
+             focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]"
+    >
+      Próxima
+    </button>
+  </div>
+<div
+  *ngIf="modalAbertura === 'novo' || modalAbertura === 'editar'"
+  class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/60 px-0 sm:p-4"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="modal-quarto-title"
+>
+  <div
+    class="flex flex-col w-full h-full max-h-full
+           bg-[var(--bg-card)] text-[var(--text-color)]
+           rounded-none sm:rounded-xl
+           shadow-none sm:shadow-2xl
+           border-none sm:border border-[var(--border-color)]
+           sm:max-w-md sm:h-auto sm:max-h-[90vh]"
+  >
+    <div class="flex items-start gap-4 p-5">
+      <div
+        class="flex-shrink-0 w-12 h-12 rounded-full
+               bg-[var(--accent-yellow)] text-black
+               flex items-center justify-center"
+      >
+        <ng-container *ngIf="modalAbertura === 'editar'; else novoIconQuarto">
+          <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none"
+               viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"/>
+          </svg>
+        </ng-container>
+        <ng-template #novoIconQuarto>
+          <svg class="w-7 h-7" xmlns="http://www.w3.org/2000/svg" fill="none"
+               viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+          </svg>
+        </ng-template>
+      </div>
+
+      <div class="flex-grow">
+        <h2 id="modal-quarto-title" class="text-xl font-bold text-[var(--text-color)]">
+          {{ modalAbertura === 'novo' ? 'Novo Quarto' : 'Editar Quarto' }}
+        </h2>
+        <p class="text-sm text-[var(--text-dim)] mt-1">
+          Preencha os campos obrigatórios e salve.
+        </p>
+      </div>
+
+      <button
+        (click)="fecharModal()"
+        type="button"
+        [disabled]="estaCarregandoAcao"
+        class="p-1 rounded-full text-[var(--text-dim)]
+               hover:bg-[var(--table-row-hover)] hover:text-red-500
+               focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]
+               focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        aria-label="Fechar"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <form
+      (ngSubmit)="modalAbertura === 'novo' ? criarQuarto() : atualizarQuarto()"
+      class="p-5 space-y-4 overflow-y-auto border-t border-[var(--border-color)]"
+      novalidate
+    >
+      <div>
+        <label for="quarto-numero" class="block text-sm font-medium text-[var(--text-color)] mb-1">
+          Número <span class="text-red-500">*</span>
+        </label>
+        <input
+          id="quarto-numero"
+          [(ngModel)]="model.numero"
+          name="numero"
+          maxlength="3"
+          placeholder="Ex: 101"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          (input)="onNumeroInput($event)"
+          (keydown)="apenasNumerosKeydown($event)"
+          (paste)="onNumeroPaste($event)"
+          [disabled]="estaCarregandoAcao"
+          class="w-full rounded-lg p-2 text-base
+                 bg-[var(--bg-color)] text-[var(--text-color)]
+                 border border-[var(--border-color)]
+                 focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]
+                 focus:border-[var(--accent-yellow)] disabled:opacity-50"
+        />
+      </div>
+
+      <div>
+        <label for="quarto-nome" class="block text-sm font-medium text-[var(--text-color)] mb-1">
+          Nome/Identificação
+          <span class="text-[var(--text-dim)] font-normal">(opcional)</span>
+        </label>
+        <input
+          id="quarto-nome"
+          [(ngModel)]="model.nome"
+          name="nome"
+          maxlength="20"
+          placeholder="Ex: Suíte Master"
+          [disabled]="estaCarregandoAcao"
+          class="w-full rounded-lg p-2 text-base
+                 bg-[var(--bg-color)] text-[var(--text-color)]
+                 border border-[var(--border-color)]
+                 focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]
+                 focus:border-[var(--accent-yellow)] disabled:opacity-50"
+        />
+      </div>
+
+      <div class="relative">
+        <label for="quarto-tipo" class="block text-sm font-medium text-[var(--text-color)] mb-1">
+          Tipo <span class="text-red-500">*</span>
+        </label>
+        <select
+          id="quarto-tipo"
+          [(ngModel)]="model.tipo"
+          name="tipo"
+          [disabled]="estaCarregandoAcao"
+          class="w-full rounded-lg p-2 text-base appearance-none
+                 bg-[var(--bg-color)] text-[var(--text-color)]
+                 border border-[var(--border-color)]
+                 focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]
+                 focus:border-[var(--accent-yellow)] disabled:opacity-50"
+        >
+          <option *ngFor="let t of tipos" [value]="t">{{ t | titlecase }}</option>
+        </select>
+        <div
+          class="pointer-events-none absolute inset-y-0 right-0 top-[30px]
+                 flex items-center px-3 text-[var(--text-dim)]"
+        >
+          <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+                  d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4-4.5a.75.75 0 01.02-1.06z"
+                  clip-rule="evenodd"/>
+          </svg>
+        </div>
+      </div>
+
+      <div>
+        <label for="quarto-valor" class="block text-sm font-medium text-[var(--text-color)] mb-1">
+          Valor Diária <span class="text-red-500">*</span>
+        </label>
+        <input
+          id="quarto-valor"
+          [(ngModel)]="model.valorDiaria"
+          name="valorDiaria"
+          maxlength="10"
+          placeholder="Ex: 80,00"
+          inputmode="decimal"
+          (input)="onValorInput($event)"
+          (keydown)="apenasNumeroVirgulaKeydown($event)"
+          (paste)="onValorPaste($event)"
+          (blur)="onValorBlur()"
+          [disabled]="estaCarregandoAcao"
+          class="w-full rounded-lg p-2 text-base
+                 bg-[var(--bg-color)] text-[var(--text-color)]
+                 border border-[var(--border-color)]
+                 focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]
+                 focus:border-[var(--accent-yellow)] disabled:opacity-50"
+        />
+      </div>
+
+      <div>
+        <label for="quarto-motivo" class="block text-sm font-medium text-[var(--text-color)] mb-1">
+          Por que está criando este quarto?
+          <span class="text-[var(--text-dim)]">(opcional)</span>
+        </label>
+        <textarea
+          id="quarto-motivo"
+          [(ngModel)]="model.motivo"
+          name="motivo"
+          rows="2"
+          maxlength="200"
+          placeholder="Ex: Novo bloco inaugurado, ajuste de capacidade, readequação de numeração..."
+          [disabled]="estaCarregandoAcao"
+          class="w-full rounded-lg p-2 text-sm
+                 bg-[var(--bg-color)] text-[var(--text-color)]
+                 border border-[var(--border-color)] resize-none
+                 focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]
+                 focus:border-[var(--accent-yellow)] disabled:opacity-50"
+        ></textarea>
+      </div>
+
+      <div *ngIf="modalAbertura === 'editar'" class="relative">
+        <label for="quarto-status" class="block text-sm font-medium text-[var(--text-color)] mb-1">
+          Status <span class="text-red-500">*</span>
+        </label>
+        <select
+          id="quarto-status"
+          [(ngModel)]="model.status"
+          name="status"
+          [disabled]="estaCarregandoAcao"
+          class="w-full rounded-lg p-2 text-base appearance-none
+                 bg-[var(--bg-color)] text-[var(--text-color)]
+                 border border-[var(--border-color)]
+                 focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]
+                 focus:border-[var(--accent-yellow)] disabled:opacity-50"
+        >
+          <option value="DISPONIVEL">Disponível</option>
+          <option value="MANUTENCAO">Manutenção</option>
+        </select>
+        <div
+          class="pointer-events-none absolute inset-y-0 right-0 top-[30px]
+                 flex items-center px-3 text-[var(--text-dim)]"
+        >
+          <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+                  d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4-4.5a.75.75 0 01.02-1.06z"
+                  clip-rule="evenodd"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-6">
+        <button
+          type="button"
+          (click)="fecharModal()"
+          [disabled]="estaCarregandoAcao"
+          class="inline-flex items-center justify-center gap-2 min-w-[130px] px-4 py-2 rounded-xl text-sm font-semibold transition
+                 bg-transparent text-[var(--text-color)]
+                 border border-[var(--border-color)]
+                 hover:bg-[var(--table-row-hover)]
+                 focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]
+                 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          [disabled]="estaCarregandoAcao"
+          class="inline-flex items-center justify-center gap-2 min-w-[130px] px-4 py-2 rounded-xl text-sm font-semibold transition
+                 text-black bg-[var(--accent-yellow)] hover:brightness-110 border border-transparent shadow-sm
+                 focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]
+                 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <ng-container *ngIf="estaCarregandoAcao; else textoSubmit">
+            <svg
+              class="animate-spin w-5 h-5 text-gray-800"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            Processando...
+          </ng-container>
+          <ng-template #textoSubmit>
+            {{ modalAbertura === 'novo' ? 'Salvar' : 'Atualizar' }}
+          </ng-template>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+ <div
+  *ngIf="modalAbertura === 'detalhes' && selectedQuarto"
+  class="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 backdrop-blur-sm bg-black/60"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="modal-detalhes-quarto-title"
+>
+  <div
+    class="
+      flex flex-col w-full h-full            
+
+      sm:w-full sm:max-w-lg                  
+      sm:h-auto sm:max-h-[90vh]              
+      sm:rounded-2xl sm:shadow-2xl sm:border  
+
+      rounded-none shadow-none border-none    
+      bg-[var(--bg-card)] text-[var(--text-color)]
+    "
+  >
+      <div class="flex items-start gap-4 p-5">
+        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+          <svg class="w-7 h-7" xmlns="http://www.w3.org/2000/svg" fill="none"
+               viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <div class="flex-grow">
+          <h2 id="modal-detalhes-quarto-title" class="text-xl font-bold text-[var(--text-color)]">
+            Detalhes do Quarto
+          </h2>
+          <p class="text-sm text-[var(--text-dim)] mt-1">
+            Informações do Quarto nº <strong>{{ selectedQuarto.numero }}</strong>
+          </p>
+        </div>
+        <button
+          (click)="fecharModal()"
+          type="button"
+          class="p-1.5 rounded-full text-[var(--text-dim)]
+                 hover:bg-[var(--table-row-hover)] hover:text-red-500
+                 focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]
+                 focus:ring-offset-2"
+          aria-label="Fechar"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto border-t border-[var(--border-color)]">
+        <dl class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-[var(--text-dim)]">Número</dt>
+            <dd class="mt-1 text-sm font-semibold break-words sm:col-span-2 sm:mt-0">
+              {{ selectedQuarto.numero }}
+            </dd>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-[var(--text-dim)]">Nome</dt>
+            <dd class="mt-1 text-sm font-semibold break-all sm:col-span-2 sm:mt-0">
+              {{ selectedQuarto.nome || '—' }}
+            </dd>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-[var(--text-dim)]">Tipo</dt>
+            <dd class="mt-1 text-sm font-semibold sm:col-span-2 sm:mt-0">
+              {{ selectedQuarto.tipo | titlecase }}
+            </dd>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-[var(--text-dim)]">Valor Diária</dt>
+            <dd class="mt-1 text-sm font-semibold sm:col-span-2 sm:mt-0">
+              R$ {{ selectedQuarto.valorDiaria || 0 | number: '1.2-2' }}
+            </dd>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-[var(--text-dim)]">Status</dt>
+            <dd class="mt-1 text-sm font-semibold sm:col-span-2 sm:mt-0">
+              {{
+                selectedQuarto.status === 'DISPONIVEL' ? 'Disponível' :
+                selectedQuarto.status === 'MANUTENCAO' ? 'Manutenção' :
+                selectedQuarto.status === 'OCUPADO' ? 'Ocupado' : selectedQuarto.status
+              }}
+            </dd>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-[var(--text-dim)]">Código do Quarto</dt>
+            <dd class="mt-1 text-sm font-semibold sm:col-span-2 sm:mt-0">
+              {{ selectedQuarto.codigo || '—' }}
+            </dd>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-[var(--text-dim)]">Criado em</dt>
+            <dd class="mt-1 text-sm font-semibold sm:col-span-2 sm:mt-0">
+              {{ selectedQuarto.criadoEm | date:'dd/MM/yyyy HH:mm' }}
+            </dd>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-[var(--text-dim)]">Criado por</dt>
+            <dd class="mt-1 text-sm font-semibold sm:col-span-2 sm:mt-0">
+              {{ selectedQuarto.criadoPorNome || '—' }}
+            </dd>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-4">
+            <dt class="text-sm font-medium text-[var(--text-dim)]">Porquê</dt>
+            <dd class="mt-1 text-sm font-semibold sm:col-span-2 sm:mt-0 break-words">
+              {{ selectedQuarto.descricao || '—' }}
+            </dd>
+          </div>
+        </dl>
+
+        <div class="mt-6 pt-5 border-t border-[var(--border-color)]">
+          <div class="flex justify-end gap-3">
+            <button
+              (click)="fecharModal()"
+              type="button"
+              class="inline-flex items-center justify-center gap-2 min-w-[130px] px-4 py-2 rounded-xl font-semibold transition
+                     bg-transparent text-[var(--text-color)]
+                     border border-[var(--border-color)] hover:bg-[var(--table-row-hover)]
+                     focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]"
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    *ngIf="modalAbertura === 'excluir' && selectedQuarto"
+    class="fixed inset-0 z-50 flex items-center justify-center px-3 backdrop-blur-sm bg-black/60"
+  >
+    <div
+      class="w-full max-w-sm relative rounded-2xl shadow-xl
+             bg-[var(--bg-card)] text-[var(--text-color)]
+             border border-[var(--border-color)]"
+    >
+      <div class="flex items-start gap-4 p-5">
+        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center">
+          <svg class="w-7 h-7" xmlns="http://www.w3.org/2000/svg" fill="none"
+               viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/>
+          </svg>
+        </div>
+        <div class="flex-grow">
+          <h3 class="text-xl font-bold text-[var(--text-color)]">Excluir Quarto</h3>
+          <p class="mt-1 text-[var(--text-dim)]">
+            Tem certeza que deseja excluir o quarto
+            <strong class="text-[var(--text-color)]">
+              {{ selectedQuarto.numero }} - {{ selectedQuarto.nome || '—' }}
+            </strong>?
+            Essa ação não pode ser desfeita.
+          </p>
+        </div>
+        <button
+          (click)="fecharModal()"
+          type="button"
+          [disabled]="estaCarregandoAcao"
+          class="p-1 rounded-full text-[var(--text-dim)] -mt-2 -mr-2
+                 hover:bg-[var(--table-row-hover)] hover:text-red-500
+                 focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]
+                 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Fechar"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="flex gap-3 justify-end p-4 bg-black/10 border-t border-[var(--border-color)]">
+        <button
+          (click)="fecharModal()"
+          type="button"
+          [disabled]="estaCarregandoAcao"
+          class="inline-flex items-center justify-center gap-2 min-w-[130px] px-4 py-2 rounded-xl font-semibold transition
+                 bg-transparent text-[var(--text-color)]
+                 border border-[var(--border-color)] hover:bg-[var(--table-row-hover)]
+                 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="excluirQuartoConfirmado()"
+          [disabled]="estaCarregandoAcao"
+          type="button"
+          class="inline-flex items-center justify-center gap-2 min-w-[130px] px-4 py-2 rounded-xl font-semibold text-white transition disabled:opacity-50
+                 bg-red-600 hover:bg-red-700 shadow disabled:cursor-not-allowed"
+        >
+          <ng-container *ngIf="estaCarregandoAcao">
+            <svg class="animate-spin w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+              </path>
+            </svg>
+            Excluindo...
+          </ng-container>
+          <ng-container *ngIf="!estaCarregandoAcao">
+            Excluir
+          </ng-container>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div
+    *ngIf="modalAbertura === 'sucesso' && sucesso"
+    class="fixed inset-0 z-50 flex items-center justify-center px-4 backdrop-blur-sm bg-black/60"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-sucesso-quarto-title"
+  >
+    <div
+      class="w-full max-w-lg rounded-2xl shadow-2xl
+             bg-[var(--bg-card)] text-[var(--text-color)]
+             border border-[var(--border-color)]"
+    >
+      <div class="flex items-start gap-4 p-5">
+        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-green-100 text-green-700 flex items-center justify-center">
+          <svg class="w-7 h-7" xmlns="http://www.w3.org/2000/svg" fill="none"
+               viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div class="flex-grow">
+          <h3 id="modal-sucesso-quarto-title" class="text-xl font-bold">
+            Quarto criado com sucesso!
+          </h3>
+          <p class="text-sm text-[var(--text-dim)] mt-1">
+            Essas são as informações principais do novo quarto.
+          </p>
+        </div>
+        <button
+          (click)="fecharModal()"
+          type="button"
+          class="p-1 rounded-full text-[var(--text-dim)]
+                 hover:bg-[var(--table-row-hover)] hover:text-red-500
+                 focus:outline-none focus:ring-2 focus:ring-[var(--accent-yellow)]"
+          aria-label="Fechar"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="px-5 pb-5 border-t border-[var(--border-color)]">
+        <dl class="divide-y divide-[var(--border-color)] text-sm">
+          <div class="py-3 grid grid-cols-3 gap-4">
+            <dt class="text-[var(--text-dim)]">ID</dt>
+            <dd class="col-span-2 font-semibold">{{ sucesso.id }}</dd>
+          </div>
+          <div class="py-3 grid grid-cols-3 gap-4">
+            <dt class="text-[var(--text-dim)]">Código do Quarto</dt>
+            <dd class="col-span-2 font-semibold">{{ sucesso.codigo }}</dd>
+          </div>
+          <div class="py-3 grid grid-cols-3 gap-4">
+            <dt class="text-[var(--text-dim)]">Número</dt>
+            <dd class="col-span-2 font-semibold">{{ sucesso.numero }}</dd>
+          </div>
+          <div class="py-3 grid grid-cols-3 gap-4">
+            <dt class="text-[var(--text-dim)]">Nome</dt>
+            <dd class="col-span-2 font-semibold">{{ sucesso.nome || '—' }}</dd>
+          </div>
+          <div class="py-3 grid grid-cols-3 gap-4">
+            <dt class="text-[var(--text-dim)]">Tipo</dt>
+            <dd class="col-span-2 font-semibold">{{ sucesso.tipo | titlecase }}</dd>
+          </div>
+          <div class="py-3 grid grid-cols-3 gap-4">
+            <dt class="text-[var(--text-dim)]">Valor Diária</dt>
+            <dd class="col-span-2 font-semibold">
+              R$ {{ sucesso.valorDiaria || 0 | number:'1.2-2' }}
+            </dd>
+          </div>
+          <div class="py-3 grid grid-cols-3 gap-4">
+            <dt class="text-[var(--text-dim)]">Status</dt>
+            <dd class="col-span-2 font-semibold">
+              {{ sucesso.status === 'DISPONIVEL' ? 'Disponível' : sucesso.status }}
+            </dd>
+          </div>
+          <div class="py-3 grid grid-cols-3 gap-4">
+            <dt class="text-[var(--text-dim)]">Criado por</dt>
+            <dd class="col-span-2 font-semibold">{{ sucesso.criadoPorNome || '—' }}</dd>
+          </div>
+          <div class="py-3 grid grid-cols-3 gap-4">
+            <dt class="text-[var(--text-dim)]">Criado em</dt>
+            <dd class="col-span-2 font-semibold">
+              {{ sucesso.criadoEm | date:'dd/MM/yyyy HH:mm' }}
+            </dd>
+          </div>
+        </dl>
+
+        <div class="mt-5 flex justify-end">
+          <button
+            (click)="fecharModal()"
+            class="inline-flex items-center justify-center gap-2 min-w-[130px] px-4 py-2 rounded-xl font-semibold transition
+                   bg-transparent text-[var(--text-color)]
+                   border border-[var(--border-color)]
+                   hover:bg-[var(--table-row-hover)]"
+          >
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

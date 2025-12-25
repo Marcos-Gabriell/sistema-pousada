@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: pousada_postgres
+    environment:
+      POSTGRES_DB: pousada
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      # 🔽 garantimos fuso dentro do container do Postgres
+      TZ: America/Sao_Paulo
+      PGTZ: America/Sao_Paulo
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - pousada_net
+
+  api:
+    build: .
+    container_name: pousada_api
+    depends_on:
+      - postgres
+    environment:
+      # 🔽 nome certo da variável do Spring
+      SPRING_PROFILES_ACTIVE: dev
+
+      # 🔽 datasource apontando pro container do postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pousada
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+
+      # 🔽 se for ambiente de dev, pode ser create / update
+      # usa a forma que o Spring entende em env-var
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+      # 🔽 garante que a app rode no mesmo fuso
+      TZ: America/Sao_Paulo
+    ports:
+      - "8080:8080"
+    networks:
+      - pousada_net
+
+volumes:
+  pgdata:
+
+networks:
+  pousada_net:
+    driver: bridge

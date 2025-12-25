@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head><meta charset="UTF-8"/></head>
+<body>
+
+<th:block th:fragment="styles">
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; color:#111; }
+        h1 { font-size: 18px; margin: 0 0 8px; }
+        .muted { color:#555; }
+        .kpis { display: table; width: 100%; margin: 10px 0 12px; table-layout: fixed; }
+        .kpi { display: table-cell; padding: 8px; border: 1px solid #ddd; vertical-align: top; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        th, td { border: 1px solid #ddd; padding: 6px; }
+        th { background: #f5f5f5; text-align: left; }
+
+        /* Marca d'água */
+        .watermark { position: fixed; inset: 0; z-index: -1; opacity: .06; pointer-events:none; }
+        .watermark img { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-12deg); width:75%; max-width:1200px; }
+
+        /* Header e logo */
+        header {
+            position: running(header); /* <<< CORREÇÃO: Captura o header */
+        }
+        .head { display:flex; align-items:center; gap:10px; margin:0 0 6px; }
+        .head .logo { height:22px; width:auto; display:inline-block; }
+
+        /* Footer */
+        footer { position: running(footer); font-size:10px; color:#666; border-top:1px solid #ddd; padding-top:4px; }
+
+        @page {
+            size: A4;
+            margin: 18mm 14mm 20mm 14mm;
+            @top-center { content: element(header); } /* <<< CORREÇÃO: "Desenha" o header em toda pág */
+            @bottom-center { content: element(footer); }
+        }
+
+        /* Contador de páginas corrigido */
+        .page-counter::before {
+            content: "Página " counter(page) " / " counter(pages);
+        }
+    </style>
+</th:block>
+
+<div th:fragment="watermark(logoPath)" class="watermark">
+    <img th:src="${logoPath}" alt="Logo">
+</div>
+
+<header th:fragment="header(titulo, logoPath)">
+    <div class="head">
+        <img class="logo" th:if="${logoPath != null}" th:src="${logoPath}" alt="Logo">
+        <h1 th:text="${titulo}">Relatório</h1>
+    </div>
+</header>
+
+<footer th:fragment="footer(titulo, geradoEm, geradoPor)">
+    <span th:text="${titulo}">Relatório</span>
+    — Emitido em: <span th:text="${#temporals.format(geradoEm,'dd/MM/yyyy HH:mm')}">00/00/0000 00:00</span>
+    — Por: <span th:text="${geradoPor}">ADMIN</span>
+
+    <span style="float:right" class="page-counter"></span>
+</footer>
+
+</body>
+</html>

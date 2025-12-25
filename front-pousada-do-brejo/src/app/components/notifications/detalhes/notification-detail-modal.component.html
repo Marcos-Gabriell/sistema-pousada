@@ -1,0 +1,408 @@
+<!-- Modal -->
+<div
+  *ngIf="open"
+  class="fixed inset-0 z-50 flex items-stretch sm:items-center justify-center
+         bg-black/40 backdrop-blur-sm
+         px-0 py-0 sm:px-4 sm:py-8"
+  role="dialog"
+  aria-modal="true"
+  (click)="closeAll.emit()"
+>
+  <!-- Panel -->
+  <div
+    #panel
+    class="relative w-full h-full sm:h-auto
+           sm:w-[min(92vw,720px)] sm:max-h-[86vh]
+           flex flex-col overflow-hidden
+           bg-[var(--bg-card)] shadow-2xl ring-1 ring-black/5
+           border border-[var(--border-color)] text-[var(--text-color)]
+           rounded-none sm:rounded-2xl"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Header -->
+    <div
+      class="sticky top-0 z-10 bg-[var(--bg-card)]/95 backdrop-blur
+             border-b border-[var(--border-color)]"
+    >
+      <div class="grid grid-cols-3 items-center px-4 sm:px-5 py-2.5">
+        <!-- Voltar -->
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            aria-label="Voltar"
+            title="Voltar"
+            class="inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-full
+                   hover:bg-[var(--table-row-hover)]
+                   focus:outline-none focus:ring-2 focus:ring-yellow-400/80"
+            (click)="back.emit()"
+          >
+            <svg
+              class="w-6 h-6 sm:w-5 sm:h-5 text-[var(--text-dim)]"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M12.79 5.23a.75.75 0 01-.02 1.06L8.83 10l3.94 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Paginação -->
+        <div class="flex items-center justify-center gap-2">
+          <button
+            type="button"
+            aria-label="Anterior"
+            title="Anterior"
+            class="inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-full
+                   hover:bg-[var(--table-row-hover)]
+                   focus:outline-none focus:ring-2 focus:ring-yellow-400/80
+                   disabled:opacity-40 disabled:cursor-not-allowed"
+            (click)="goPrev()"
+            [disabled]="!hasPrev"
+          >
+            <svg
+              class="w-6 h-6 sm:w-5 sm:h-5 text-[var(--text-dim)]"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M12.79 5.23a.75.75 0 01-.02 1.06L8.83 10l3.94 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
+
+          <span
+            *ngIf="pageCounter"
+            class="px-3 py-1 rounded-full
+                   bg-[var(--bg-color)]
+                   border border-[var(--border-color)]
+                   text-sm font-semibold text-[var(--text-color)]
+                   min-w-[84px] text-center"
+          >
+            {{ pageCounter }}
+          </span>
+
+          <button
+            type="button"
+            aria-label="Próxima"
+            title="Próxima"
+            class="inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-full
+                   hover:bg-[var(--table-row-hover)]
+                   focus:outline-none focus:ring-2 focus:ring-yellow-400/80
+                   disabled:opacity-40 disabled:cursor-not-allowed"
+            (click)="goNext()"
+            [disabled]="!hasNext"
+          >
+            <svg
+              class="w-6 h-6 sm:w-5 sm:h-5 text-[var(--text-dim)]"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M7.21 14.77a.75.75 0 01.02-1.06L11.17 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Fechar -->
+        <div class="flex items-center justify-end">
+          <button
+            type="button"
+            aria-label="Fechar"
+            title="Fechar"
+            class="inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-full transition
+                   focus:outline-none focus:ring-2 focus:ring-red-300/70
+                   hover:bg-[var(--table-row-hover)] group"
+            (click)="closeAll.emit()"
+          >
+            <svg
+              class="w-6 h-6 sm:w-5 sm:h-5 text-[var(--text-dim)] transition group-hover:text-red-500"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M6 6l12 12M18 6L6 18"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Corpo -->
+    <div
+      class="flex-1 overflow-y-auto px-4 sm:px-5 py-6 sm:py-6 bg-[var(--bg-card)] flex"
+      *ngIf="item as it"
+    >
+      <!-- Wrapper centralizado -->
+      <div
+        class="w-full max-w-xl mx-auto flex flex-col items-center text-center gap-4 sm:gap-5"
+      >
+        <!-- Título + datas -->
+        <div class="w-full">
+          <h3
+            class="text-[20px] sm:text-[22px] font-extrabold text-[var(--text-color)] mb-3"
+          >
+            {{ it.title }}
+          </h3>
+
+          <div
+            class="flex flex-col sm:flex-row items-center justify-center gap-2 text-sm text-[var(--text-dim)]"
+          >
+            <span
+              class="bg-[var(--bg-color)] px-3 py-1.5 rounded-lg font-medium border border-[var(--border-color)]"
+            >
+              {{ smartDate(it.createdAt) }}
+            </span>
+            <span class="hidden sm:inline text-[var(--text-dim)]">•</span>
+            <span
+              class="bg-yellow-400 text-yellow-900 px-3 py-1.5 rounded-lg font-bold text-xs"
+            >
+              Notificações com +90 dias são removidas
+            </span>
+          </div>
+        </div>
+
+        <!-- MENSAGEM -->
+        <div class="w-full">
+          <div
+            class="notif-message text-[14px] sm:text-[15px] leading-relaxed"
+            [title]="asPlain(it.message)"
+          >
+            {{ asPlain(it.message) }}
+          </div>
+        </div>
+
+        <!-- TAGS -->
+        <div
+          *ngIf="it.recipientsLabel?.length"
+          class="flex flex-wrap gap-2 justify-center mt-2"
+        >
+          <span
+            *ngFor="let tag of it.recipientsLabel"
+            class="notif-tag"
+            [title]="tag"
+          >
+            {{ tag }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal -->
+<div
+  *ngIf="open"
+  class="fixed inset-0 z-50 flex items-stretch sm:items-center justify-center
+         bg-black/40 backdrop-blur-sm
+         px-0 py-0 sm:px-4 sm:py-8"
+  role="dialog"
+  aria-modal="true"
+  (click)="closeAll.emit()"
+>
+  <!-- Panel -->
+  <div
+    #panel
+    class="relative w-full h-full sm:h-auto
+           sm:w-[min(92vw,720px)] sm:max-h-[86vh]
+           flex flex-col overflow-hidden
+           bg-[var(--bg-card)] shadow-2xl ring-1 ring-black/5
+           border border-[var(--border-color)] text-[var(--text-color)]
+           rounded-none sm:rounded-2xl"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Header -->
+    <div
+      class="sticky top-0 z-10 bg-[var(--bg-card)]/95 backdrop-blur
+             border-b border-[var(--border-color)]"
+    >
+      <div class="grid grid-cols-3 items-center px-4 sm:px-5 py-2.5">
+        <!-- Voltar -->
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            aria-label="Voltar"
+            title="Voltar"
+            class="inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-full
+                   hover:bg-[var(--table-row-hover)]
+                   focus:outline-none focus:ring-2 focus:ring-yellow-400/80"
+            (click)="back.emit()"
+          >
+            <svg
+              class="w-6 h-6 sm:w-5 sm:h-5 text-[var(--text-dim)]"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M12.79 5.23a.75.75 0 01-.02 1.06L8.83 10l3.94 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Paginação -->
+        <div class="flex items-center justify-center gap-2">
+          <button
+            type="button"
+            aria-label="Anterior"
+            title="Anterior"
+            class="inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-full
+                   hover:bg-[var(--table-row-hover)]
+                   focus:outline-none focus:ring-2 focus:ring-yellow-400/80
+                   disabled:opacity-40 disabled:cursor-not-allowed"
+            (click)="goPrev()"
+            [disabled]="!hasPrev"
+          >
+            <svg
+              class="w-6 h-6 sm:w-5 sm:h-5 text-[var(--text-dim)]"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M12.79 5.23a.75.75 0 01-.02 1.06L8.83 10l3.94 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
+
+          <span
+            *ngIf="pageCounter"
+            class="px-3 py-1 rounded-full
+                   bg-[var(--bg-color)]
+                   border border-[var(--border-color)]
+                   text-sm font-semibold text-[var(--text-color)]
+                   min-w-[84px] text-center"
+          >
+            {{ pageCounter }}
+          </span>
+
+          <button
+            type="button"
+            aria-label="Próxima"
+            title="Próxima"
+            class="inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-full
+                   hover:bg-[var(--table-row-hover)]
+                   focus:outline-none focus:ring-2 focus:ring-yellow-400/80
+                   disabled:opacity-40 disabled:cursor-not-allowed"
+            (click)="goNext()"
+            [disabled]="!hasNext"
+          >
+            <svg
+              class="w-6 h-6 sm:w-5 sm:h-5 text-[var(--text-dim)]"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M7.21 14.77a.75.75 0 01.02-1.06L11.17 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Fechar -->
+        <div class="flex items-center justify-end">
+          <button
+            type="button"
+            aria-label="Fechar"
+            title="Fechar"
+            class="inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-full transition
+                   focus:outline-none focus:ring-2 focus:ring-red-300/70
+                   hover:bg-[var(--table-row-hover)] group"
+            (click)="closeAll.emit()"
+          >
+            <svg
+              class="w-6 h-6 sm:w-5 sm:h-5 text-[var(--text-dim)] transition group-hover:text-red-500"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M6 6l12 12M18 6L6 18"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Corpo -->
+    <div
+      class="flex-1 overflow-y-auto px-4 sm:px-5 py-6 sm:py-6 bg-[var(--bg-card)] flex"
+      *ngIf="item as it"
+    >
+      <!-- Wrapper centralizado -->
+      <div
+        class="w-full max-w-xl mx-auto flex flex-col items-center text-center gap-4 sm:gap-5"
+      >
+        <!-- Título + datas -->
+        <div class="w-full">
+          <h3
+            class="text-[20px] sm:text-[22px] font-extrabold text-[var(--text-color)] mb-3"
+          >
+            {{ it.title }}
+          </h3>
+
+          <div
+            class="flex flex-col sm:flex-row items-center justify-center gap-2 text-sm text-[var(--text-dim)]"
+          >
+            <span
+              class="bg-[var(--bg-color)] px-3 py-1.5 rounded-lg font-medium border border-[var(--border-color)]"
+            >
+              {{ smartDate(it.createdAt) }}
+            </span>
+            <span class="hidden sm:inline text-[var(--text-dim)]">•</span>
+            <span
+              class="bg-yellow-400 text-yellow-900 px-3 py-1.5 rounded-lg font-bold text-xs"
+            >
+              Notificações com +90 dias são removidas
+            </span>
+          </div>
+        </div>
+
+        <!-- MENSAGEM -->
+        <div class="w-full">
+          <div
+            class="notif-message text-[14px] sm:text-[15px] leading-relaxed"
+            [title]="asPlain(it.message)"
+          >
+            {{ asPlain(it.message) }}
+          </div>
+        </div>
+
+        <!-- TAGS -->
+        <div
+          *ngIf="it.recipientsLabel?.length"
+          class="flex flex-wrap gap-2 justify-center mt-2"
+        >
+          <span
+            *ngFor="let tag of it.recipientsLabel"
+            class="notif-tag"
+            [title]="tag"
+          >
+            {{ tag }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

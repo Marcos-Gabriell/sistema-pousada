@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8"/>
+
+    <style>
+        @page { size: A4; margin: 18mm 14mm 18mm 14mm; }
+        * { box-sizing: border-box; }
+
+        body{
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            font-weight: 400;
+            color:#111;
+            margin:0;
+            padding:0;
+            line-height:1.35;
+        }
+
+        .avoid-break{ page-break-inside: avoid; }
+        .container{ width:100%; }
+        .muted{ color:#555; }
+        .center{ text-align:center; }
+        .right{ text-align:right; }
+
+        /* ===== RAID ===== */
+        .header{
+            border-bottom:2px solid #111;
+            padding-bottom:10px;
+            margin-bottom:12px;
+            display:table;
+            width:100%;
+        }
+        .header-left,.header-right{ display:table-cell; vertical-align:middle; }
+        .header-left{ width:65%; }
+        .header-right{ width:35%; text-align:right; }
+
+        .brand{ display:table; width:100%; }
+        .brand-logo,.brand-text{ display:table-cell; vertical-align:middle; }
+        .brand-logo{ width:78px; }
+
+        .logo{
+            width:64px;
+            height:64px;
+            border-radius:14px;
+            border:1px solid #e5e7eb;
+            display:block;
+        }
+
+        .brand-title{
+            font-size:14px;
+            font-weight:600;
+            margin:0;
+            line-height:1.2;
+        }
+        .brand-subtitle{
+            font-size:11px;
+            color:#555;
+            margin:2px 0 0;
+        }
+
+        .report-title{
+            font-size:18px;
+            font-weight:600;
+            margin:0;
+            line-height:1.2;
+        }
+        .report-chip{
+            display:inline-block;
+            margin-top:6px;
+            padding:3px 10px;
+            font-size:10px;
+            font-weight:500;
+            border:1px solid #e5e7eb;
+            border-radius:999px;
+            background:#f8fafc;
+            color:#333;
+        }
+
+        .meta{
+            margin:10px 0 16px;
+            padding:12px 12px;
+            border:1px solid #e5e7eb;
+            border-radius:12px;
+            background:#fafafa;
+        }
+        .meta-row{ display:table; width:100%; table-layout:fixed; }
+        .meta-item{ display:table-cell; width:33.33%; padding-right:10px; }
+
+        .meta-label{
+            font-size:10px;
+            font-weight:500;
+            color:#666;
+            text-transform:uppercase;
+            letter-spacing:.3px;
+            margin:0 0 4px;
+        }
+        .meta-value{
+            font-size:12px;
+            font-weight:600;
+            margin:0;
+        }
+        .meta-muted{
+            font-size:11px;
+            color:#555;
+            margin:4px 0 0;
+        }
+
+        /* ===== Sections/KPIs ===== */
+        .section-title{
+            font-size:13px;
+            font-weight:600;
+            margin:14px 0 8px;
+            padding-left:10px;
+            border-left:3px solid #111;
+        }
+
+        .kpi-grid{
+            width:100%;
+            display:table;
+            table-layout:fixed;
+            border-spacing:10px;
+            margin:0 0 8px;
+        }
+        .kpi{
+            display:table-cell;
+            vertical-align:top;
+            padding:12px 12px 10px;
+            border:1px solid #e5e7eb;
+            border-radius:12px;
+            background:#fff;
+            page-break-inside: avoid;
+        }
+        .kpi .kpi-title{
+            font-size:10px;
+            color:#666;
+            text-transform:uppercase;
+            letter-spacing:.3px;
+            margin:0 0 6px;
+            font-weight:500;
+        }
+        .kpi .kpi-value{
+            font-size:14px;
+            font-weight:600;
+            margin:0;
+            line-height:1.1;
+        }
+        .kpi .kpi-hint{
+            margin-top:6px;
+            font-size:10px;
+            color:#666;
+            line-height:1.25;
+        }
+
+        /* ===== TABLE ===== */
+        table{
+            width:100%;
+            border-collapse:collapse;
+            margin-top:8px;
+            border:1px solid #e5e7eb;
+            table-layout: fixed;
+        }
+
+        thead{ display: table-header-group; }
+        tr{ page-break-inside: avoid; }
+
+        th,td{
+            border-bottom:1px solid #e5e7eb;
+            padding:8px 8px;
+            font-size:11px;
+            vertical-align:top;
+            word-break: break-word;
+        }
+        th{
+            background:#f3f4f6;
+            text-align:left;
+            font-size:11px;
+            font-weight:500;
+        }
+        tbody tr:nth-child(even) td{ background:#fafafa; }
+
+        /* ✅ Colunas e espaçamentos */
+        .col-data{ width:16%; }
+        .col-tipo{ width:12%; }
+        .col-valor{ width:12%; }
+        .col-autor{ width:20%; }
+        .col-codigo{ width:14%; }
+
+        /* ✅ Descrição: quebra + sempre "...", limite 20 */
+        td.col-desc{
+            white-space: normal;
+            overflow-wrap: anywhere;
+            line-height: 1.25;
+        }
+
+        /* ✅ Autor em duas linhas (nome + ID) */
+        td.col-autor{
+            overflow-wrap:anywhere;
+            line-height:1.2;
+        }
+        .author-main{ font-size:10px; font-weight:600; color:#111; }
+        .author-id{ font-size:10px; color:#555; margin-top:2px; }
+
+        /* ✅ Código com mais distância do autor (respiro) */
+        td.col-codigo{
+            padding-left: 14px;  /* MAIS DISTÂNCIA DO AUTOR */
+            white-space: nowrap;
+        }
+
+        /* ===== FOOTER (fluxo normal, só no final do documento) ===== */
+        .pdf-footer{
+            margin-top: 20px;
+            border-top:1px solid #e5e7eb;
+            padding-top:6px;
+            font-size:10px;
+            font-weight:400;
+            color:#666;
+            overflow: hidden;
+        }
+        .footer-left{ float:left; }
+        .footer-center{ float:left; margin-left:18px; }
+        .footer-right{ float:right; }
+        .sep{ margin:0 6px; color:#999; }
+        .clearfix::after{ content:""; display:block; clear:both; }
+
+        .page-number:before{ content: counter(page); }
+        .page-count:before{ content: counter(pages); }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <div th:replace="pdf/fragments/raid :: raid(
+      'Relatório Financeiro',
+      'Movimentações',
+      ${r},
+      ${pousadaNome},
+      ${pousadaSubtitulo}
+    )"></div>
+
+    <div class="section-title">Resumo do período</div>
+
+    <div class="kpi-grid avoid-break">
+        <div class="kpi">
+            <p class="kpi-title">Entradas (R$)</p>
+            <p class="kpi-value"
+               th:text="${#numbers.formatDecimal(r.resumo.totalEntradas,1,'POINT',2,'COMMA')}">0,00</p>
+            <div class="kpi-hint">Recebimentos no período.</div>
+        </div>
+
+        <div class="kpi">
+            <p class="kpi-title">Saídas (R$)</p>
+            <p class="kpi-value"
+               th:text="${#numbers.formatDecimal(r.resumo.totalSaidas,1,'POINT',2,'COMMA')}">0,00</p>
+            <div class="kpi-hint">Despesas no período.</div>
+        </div>
+
+        <div class="kpi">
+            <p class="kpi-title">Saldo (R$)</p>
+            <p class="kpi-value"
+               th:text="${#numbers.formatDecimal(r.resumo.saldo,1,'POINT',2,'COMMA')}">0,00</p>
+            <div class="kpi-hint">Entradas − Saídas.</div>
+        </div>
+    </div>
+
+    <div class="section-title">Movimentações financeiras</div>
+
+    <table>
+        <thead>
+        <tr>
+            <th class="col-data">Data</th>
+            <th>Descrição</th>
+            <th class="col-tipo">Tipo</th>
+            <th class="right col-valor">Valor</th>
+            <th class="col-autor">Autor</th>
+            <th class="col-codigo">Código</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="l : ${r.linhas}">
+            <td class="col-data" th:text="${#temporals.format(l.data,'dd/MM/yyyy HH:mm')}">13/12/2025 11:23</td>
+
+            <!-- ✅ Descrição: até 20 chars, SEMPRE "..." e pode quebrar -->
+            <td class="col-desc"
+                th:with="d=${l.descricao != null ? l.descricao.toString() : ''},
+                         base=${#strings.length(d) > 20 ? #strings.substring(d,0,20) : d}"
+                th:text="${base + '...'}">
+                Descrição...
+            </td>
+
+            <td class="col-tipo" th:text="${l.tipo}">ENTRADA</td>
+
+            <td class="right col-valor" th:text="${#numbers.formatDecimal(l.valor,1,'POINT',2,'COMMA')}">0,00</td>
+
+            <!-- ✅ Autor: quebra em duas linhas + ID (quando vier "email | 1") -->
+            <td class="col-autor"
+                th:with="autorRaw=${l.autor != null ? l.autor.toString() : ''},
+                         temPipe=${#strings.contains(autorRaw,'|')},
+                         parteUser=${temPipe ? #strings.trim(#strings.substringBefore(autorRaw,'|')) : #strings.trim(autorRaw)},
+                         parteId=${temPipe ? #strings.trim(#strings.substringAfter(autorRaw,'|')) : ''}"
+                th:utext="${temPipe
+                  ? '<div class=&quot;author-main&quot;>' + #strings.escapeXml(parteUser) + '</div>'
+                    + '<div class=&quot;author-id&quot;>ID: ' + #strings.escapeXml(parteId) + '</div>'
+                  : '<div class=&quot;author-main&quot;>' + #strings.escapeXml(parteUser) + '</div>'}">
+                <div class="author-main">admin</div>
+                <div class="author-id">ID: 1</div>
+            </td>
+
+            <!-- ✅ Código com mais distância do autor -->
+            <td class="col-codigo" th:text="${l.codigo}">REF</td>
+        </tr>
+
+        <tr th:if="${r.linhas == null or #lists.isEmpty(r.linhas)}">
+            <td colspan="6" class="center muted" style="padding:12px;">
+                Sem movimentações no período.
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<div class="pdf-footer clearfix"
+     th:replace="pdf/fragments/footer :: footer(${pousadaNome}, ${r.geradoEm}, ${r.geradoPor})"></div>
+
+</body>
+</html>

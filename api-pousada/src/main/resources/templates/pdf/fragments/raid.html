@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<body>
+
+<div th:fragment="raid(titulo, chip, r, pousadaNome, pousadaSubtitulo)">
+
+    <div class="header avoid-break">
+        <div class="header-left">
+            <div class="brand">
+                <div class="brand-logo">
+                    <!-- ✅ relativo ao baseUri (static/) -->
+                    <img class="logo" src="images/logo-pousada.png" alt="Logo da Pousada"/>
+                </div>
+
+                <div class="brand-text">
+                    <p class="brand-title" th:text="${pousadaNome}">Pousada</p>
+                    <p class="brand-subtitle" th:text="${pousadaSubtitulo}">
+                        Sistema de Gestão • Relatórios
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <p class="report-title" th:text="${titulo}">Relatório</p>
+            <span class="report-chip" th:text="${chip}">Resumo</span>
+        </div>
+    </div>
+
+    <div class="meta avoid-break">
+        <div class="meta-row">
+
+            <div class="meta-item">
+                <p class="meta-label">Período</p>
+                <p class="meta-value">
+                    <span th:text="${#temporals.format(r.dataInicio,'dd/MM/yyyy')}"></span>
+                    <span class="muted">até</span>
+                    <span th:text="${#temporals.format(r.dataFim,'dd/MM/yyyy')}"></span>
+                </p>
+                <p class="meta-muted">Dados consolidados do intervalo selecionado.</p>
+            </div>
+
+            <div class="meta-item">
+                <p class="meta-label">Gerado em</p>
+                <p class="meta-value" th:text="${#temporals.format(r.geradoEm,'dd/MM/yyyy HH:mm')}"></p>
+                <p class="meta-muted">Horário local do servidor.</p>
+            </div>
+
+            <div class="meta-item">
+                <p class="meta-label">Emitido por</p>
+                <p class="meta-value" th:text="${r.geradoPor}">ADMIN</p>
+                <p class="meta-muted">Acesso administrativo.</p>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,47 @@
+select:focus {
+	outline: none;
+	border: 2px solid #FFD600; /* amarelo */
+	box-shadow: none;
+}
+/* Remove a seta padrão do select para evitar duplo ícone */
+select {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	background-image: none;
+}
+
+:root {
+  --bg-card: #f9fafb;
+  --text-color: #1f2937;
+  --text-dim: #6b7280;
+  --border-color: #e5e7eb;
+  --table-row-hover: #f3f4f6;
+  --accent-yellow: #facc15;
+}
+
+.dark-theme {
+  --bg-card: #2a2a2a;
+  --text-color: #f3f4f6;
+  --text-dim: #9ca3af;
+  --border-color: #3f3f46;
+  --table-row-hover: #333333;
+  --accent-yellow: #eab308;
+}
+/* 🔄 SPINNER AMARELO PADRÃO (mesmo padrão dos demais módulos) */
+.btn-spinner-dark {
+  --spinner-size: 16px;
+  --spinner-border: 2px;
+  width: var(--spinner-size);
+  height: var(--spinner-size);
+  border: var(--spinner-border) solid var(--accent-yellow);
+  border-top-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align: middle;
+  animation: spin 0.65s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

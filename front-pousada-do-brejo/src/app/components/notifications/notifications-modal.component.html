@@ -1,0 +1,443 @@
+<div
+  *ngIf="open && !detailOpen()"
+  (click)="close.emit()"
+  class="fixed inset-0 z-[100] flex items-stretch sm:items-center justify-center
+         bg-black/60 backdrop-blur-sm
+         px-0 py-0 sm:px-4 sm:py-6"
+>
+  <div
+    #modalRoot
+    tabindex="-1"
+    (click)="$event.stopPropagation()"
+    class="flex flex-col w-full h-full sm:h-auto
+           sm:max-w-2xl max-h-full sm:max-h-[90vh] overflow-hidden
+           rounded-none sm:rounded-xl shadow-xl border
+           bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-color)]"
+  >
+    <!-- CABEÇALHO -->
+    <div class="border-b p-4 sm:p-5 border-[var(--border-color)]">
+      <div class="flex items-center justify-between mb-3 sm:mb-4">
+        <h2 class="text-lg sm:text-xl font-bold text-[var(--text-color)]">
+          Notificações
+        </h2>
+
+        <button
+          (click)="close.emit()"
+          aria-label="Fechar"
+          class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full transition group
+                 text-[var(--text-dim)] hover:bg-[var(--table-row-hover)] hover:text-red-500"
+        >
+          <svg
+            class="w-4 h-4 sm:w-5 sm:h-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <!-- BUSCA + AÇÕES -->
+      <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-3 sm:mb-4">
+        <!-- BUSCA -->
+        <div class="flex-1 relative">
+          <div
+            class="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center"
+          >
+            <svg
+              class="h-4 w-4 text-[var(--text-dim)]"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+
+          <input
+            #searchBox
+            type="text"
+            [(ngModel)]="q"
+            (ngModelChange)="onQueryChange()"
+            class="block w-full pl-10 pr-8 py-2.5 text-sm rounded-lg border outline-none transition
+                   bg-[var(--bg-color)] text-[var(--text-color)]
+                   border-[var(--border-color)]
+                   focus:ring-2 focus:ring-[var(--accent-yellow)]
+                   focus:border-[var(--accent-yellow)]"
+            placeholder="Buscar por título ou mensagem…"
+          />
+
+          <button
+            *ngIf="q.trim().length"
+            (click)="clearQuery()"
+            aria-label="Limpar"
+            class="absolute inset-y-0 right-0 pr-3 flex items-center rounded-full p-1 transition
+                   text-[var(--text-dim)] hover:bg-[var(--table-row-hover)] hover:text-[var(--text-color)]"
+          >
+            <svg
+              class="h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- BOTÕES AÇÃO -->
+        <div class="flex gap-2 justify-between sm:justify-start">
+          <!-- ATUALIZAR -->
+          <button
+            (click)="reload()"
+            [disabled]="isRefreshing() || isMarkingAll()"
+            class="flex items-center gap-1 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors
+                   border border-[var(--border-color)]
+                   bg-[var(--table-row-hover)]
+                   text-[var(--text-color)]
+                   hover:bg-[color-mix(in_oklab,canvas,theme(colors.blue.500)_12%)]
+                   disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg
+              *ngIf="!isRefreshing()"
+              class="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M16.023 9.348h4.992M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0M6.261 6.26l3.182-3.182a8.25 8.25 0 0111.664 0"
+              />
+            </svg>
+
+            <svg
+              *ngIf="isRefreshing()"
+              class="w-4 h-4 animate-spin"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+            </svg>
+
+            <span class="hidden sm:inline">Atualizar</span>
+          </button>
+
+          <!-- MARCAR COMO LIDAS -->
+          <button
+            (click)="markAll()"
+            [disabled]="unread() === 0 || status() === 'LIDA' || isMarkingAll()"
+            class="flex items-center justify-center gap-2
+                   px-3 sm:px-4 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors
+                   text-white bg-blue-500 hover:bg-blue-600
+                   disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg
+              *ngIf="isMarkingAll()"
+              class="w-4 h-4 animate-spin"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 4v4m0 8v4m-4-8H4m16 0h-4"
+              />
+            </svg>
+
+            <span *ngIf="!isMarkingAll()" class="hidden sm:inline">
+              Marcar como lidas
+            </span>
+            <span *ngIf="!isMarkingAll()" class="sm:hidden">
+              Marcar lidas
+            </span>
+            <span *ngIf="isMarkingAll()" class="inline">
+              Marcando…
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- TABS + AVISO -->
+      <div
+        class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3"
+      >
+        <!-- TABS -->
+        <div
+          class="flex -mb-px overflow-x-auto border-b border-[var(--border-color)]"
+        >
+          <button
+            (click)="setStatus(null)"
+            [class]="
+              'px-3 sm:px-4 py-2 text-sm font-semibold border-b-2 transition whitespace-nowrap ' +
+              (status() === null
+                ? 'border-blue-400 text-blue-500'
+                : 'border-transparent text-[var(--text-dim)] hover:text-[var(--text-color)]')
+            "
+          >
+            Todos
+          </button>
+
+          <button
+            (click)="setStatus('NAO_LIDA')"
+            [class]="
+              'px-3 sm:px-4 py-2 text-sm font-semibold border-b-2 transition flex items-center gap-2 whitespace-nowrap ' +
+              (status() === 'NAO_LIDA'
+                ? 'border-blue-400 text-blue-500'
+                : 'border-transparent text-[var(--text-dim)] hover:text-[var(--text-color)]')
+            "
+          >
+            Não Lidas
+            <span
+              *ngIf="unread() > 0"
+              class="bg-red-600 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center"
+            >
+              {{ unread() }}
+            </span>
+          </button>
+
+          <button
+            (click)="setStatus('LIDA')"
+            [class]="
+              'px-3 sm:px-4 py-2 text-sm font-semibold border-b-2 transition whitespace-nowrap ' +
+              (status() === 'LIDA'
+                ? 'border-blue-400 text-blue-500'
+                : 'border-transparent text-[var(--text-dim)] hover:text-[var(--text-color)]')
+            "
+          >
+            Lidas
+          </button>
+        </div>
+
+        <!-- AVISO 90 DIAS -->
+        <div
+          class="flex items-center gap-2 text-amber-700 bg-amber-50
+                 px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm"
+        >
+          <svg
+            class="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+            />
+          </svg>
+          <span class="hidden xs:inline">
+            Notificações com +90 dias são removidas
+          </span>
+          <span class="xs:hidden">+90 dias removidas</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LISTAGEM -->
+    <div class="flex-1 overflow-y-auto p-3 sm:p-4 bg-[var(--bg-card)]">
+      <ng-container
+        *ngIf="svc.loading() && view().length === 0; else contentTpl"
+      >
+        <div class="flex flex-col items-center justify-center py-10 sm:py-12">
+          <div class="w-10 h-10 flex items-center justify-center">
+            <span class="btn-spinner-dark" aria-hidden="true"></span>
+          </div>
+          <p class="mt-3 text-sm sm:text-base font-semibold text-[var(--text-dim)]">
+            Carregando notificações...
+          </p>
+        </div>
+      </ng-container>
+
+      <ng-template #contentTpl>
+        <!-- ERRO -->
+        <div *ngIf="error()" class="text-center py-8 sm:py-12">
+          <div
+            class="flex flex-col items-center gap-2 sm:gap-3 text-red-600"
+          >
+            <svg
+              class="w-8 h-8 sm:w-10 sm:h-10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+              />
+            </svg>
+            <span class="text-sm sm:text-base font-semibold">
+              {{ error() }}
+            </span>
+          </div>
+        </div>
+
+        <!-- VAZIO -->
+        <div
+          *ngIf="!error() && view().length === 0"
+          class="text-center py-8 sm:py-12"
+        >
+          <div
+            class="flex flex-col items-center gap-2 sm:gap-3 text-[var(--text-dim)]"
+          >
+            <svg
+              class="w-8 h-8 sm:w-10 sm:h-10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
+              />
+            </svg>
+            <span
+              class="text-sm sm:text-base font-semibold text-[var(--text-color)]"
+            >
+              Nenhuma notificação encontrada.
+            </span>
+          </div>
+        </div>
+
+        <!-- LISTA -->
+        <ul *ngIf="view().length > 0" class="space-y-2 sm:space-y-3">
+          <li
+            *ngFor="let n of view(); trackBy: trackById"
+            (click)="openDetailFor(n)"
+            class="rounded-lg border p-3 sm:p-4 cursor-pointer group transition-all
+                   border-[var(--border-color)]
+                   bg-[var(--bg-color)]
+                   hover:bg-[color-mix(in_oklab,canvas,theme(colors.blue.400)_10%)]
+                   dark:hover:bg-[rgba(37,99,235,0.15)]
+                   hover:shadow-sm
+                   text-[var(--text-color)]"
+            [class.border-l-4]="!n.read"
+            [class.border-l-blue-400]="!n.read"
+            [title]="n.title"
+          >
+            <div class="flex items-center justify-between gap-2 sm:gap-3">
+              <div class="flex-1 min-w-0">
+                <p
+                  class="text-sm sm:text-base font-semibold mb-1 transition-colors
+                         text-[var(--text-color)]"
+                  [class.font-bold]="!n.read"
+                  [class.text-[var(--text-dim)]]="n.read"
+                >
+                  {{ n.title }}
+                </p>
+
+                <p
+                  class="text-xs sm:text-sm line-clamp-2 break-words transition-colors
+                         text-[var(--text-dim)]"
+                >
+                  {{ preview(n.message) }}
+                </p>
+              </div>
+
+              <div
+                class="flex flex-col items-center gap-1 sm:gap-2 flex-shrink-0 w-14"
+              >
+                <div *ngIf="!n.read" class="mb-1">
+                  <span
+                    class="block w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-blue-500 ring-2 ring-white"
+                  ></span>
+                </div>
+
+                <small
+                  class="text-xs whitespace-nowrap text-[var(--text-dim)]"
+                >
+                  {{ smartDate(n.createdAt) }}
+                </small>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </ng-template>
+    </div>
+
+    <!-- PAGINAÇÃO -->
+    <div
+      *ngIf="totalPages() > 1 && !error() && !svc.loading()"
+      class="border-t px-3 sm:px-4 py-3 sm:py-4
+             border-[var(--border-color)]
+             bg-[var(--table-row-hover)] text-[var(--text-color)]"
+    >
+      <div class="flex items-center justify-between">
+        <button
+          (click)="prevPage()"
+          [disabled]="page() === 0"
+          class="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-sm font-semibold transition-colors
+                 border border-[var(--border-color)]
+                 bg-[var(--bg-card)]
+                 text-[var(--text-color)]
+                 hover:bg-[var(--table-row-hover)]
+                 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              fill-rule="evenodd"
+              d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span class="hidden sm:inline">Anterior</span>
+        </button>
+
+        <span class="text-sm font-semibold px-2 sm:px-4">
+          Página {{ page() + 1 }} de {{ totalPages() }}
+        </span>
+
+        <button
+          (click)="nextPage()"
+          [disabled]="!moreAvailable()"
+          class="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-sm font-semibold transition-colors
+                 border border-[var(--border-color)]
+                 bg-[var(--bg-card)]
+                 text-[var(--text-color)]
+                 hover:bg-[var(--table-row-hover)]
+                 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span class="hidden sm:inline">Próxima</span>
+          <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              fill-rule="evenodd"
+              d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-notification-detail-modal
+  [open]="detailOpen()"
+  [item]="selected"
+  [index]="globalIndex()"
+  [total]="totalItems()"
+  (gotoIndex)="openDetailByGlobalIndex($event)"
+  (back)="closeDetail()"
+  (closeAll)="closeEverything()"
+></app-notification-detail-modal>

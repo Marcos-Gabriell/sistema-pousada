@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8"/>
+
+    <style>
+        /* ✅ mais espaço embaixo pra área do rodapé */
+        @page { size: A4; margin: 18mm 14mm 30mm 14mm; }
+        * { box-sizing: border-box; }
+
+        body{
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            font-weight: 400;
+            color:#111;
+            margin:0;
+            padding:0;
+            line-height:1.35;
+
+            /* ✅ ESSENCIAL: reserva espaço do footer fixo */
+            padding-bottom: 26mm;
+        }
+
+        .container{ width:100%; }
+        .avoid-break{ page-break-inside: avoid; }
+        .muted{ color:#555; }
+        .center{ text-align:center; }
+        .right{ text-align:right; }
+        .nowrap{ white-space:nowrap; }
+
+        /* ===== RAID (igual padrão global) ===== */
+        .header{
+            border-bottom:2px solid #111;
+            padding-bottom:10px;
+            margin-bottom:12px;
+            display:table;
+            width:100%;
+        }
+        .header-left,.header-right{ display:table-cell; vertical-align:middle; }
+        .header-left{ width:65%; }
+        .header-right{ width:35%; text-align:right; }
+
+        .brand{ display:table; width:100%; }
+        .brand-logo,.brand-text{ display:table-cell; vertical-align:middle; }
+        .brand-logo{ width:78px; }
+
+        .logo{
+            width:64px;
+            height:64px;
+            border-radius:14px;
+            border:1px solid #e5e7eb;
+            display:block;
+        }
+
+        .brand-title{
+            font-size:14px;
+            font-weight:600;
+            margin:0;
+            line-height:1.2;
+        }
+        .brand-subtitle{
+            font-size:11px;
+            color:#555;
+            margin:2px 0 0;
+        }
+
+        .report-title{
+            font-size:18px;
+            font-weight:600;
+            margin:0;
+            line-height:1.2;
+        }
+        .report-chip{
+            display:inline-block;
+            margin-top:6px;
+            padding:3px 10px;
+            font-size:10px;
+            font-weight:500;
+            border:1px solid #e5e7eb;
+            border-radius:999px;
+            background:#f8fafc;
+            color:#333;
+        }
+
+        .meta{
+            margin:10px 0 16px;
+            padding:12px;
+            border:1px solid #e5e7eb;
+            border-radius:12px;
+            background:#fafafa;
+        }
+        .meta-row{ display:table; width:100%; table-layout:fixed; }
+        .meta-item{ display:table-cell; width:33.33%; padding-right:10px; vertical-align:top; }
+
+        .meta-label{
+            font-size:10px;
+            font-weight:500;
+            color:#666;
+            text-transform:uppercase;
+            letter-spacing:.3px;
+            margin:0 0 4px;
+        }
+        .meta-value{
+            font-size:12px;
+            font-weight:600;
+            margin:0;
+        }
+        .meta-muted{
+            font-size:11px;
+            color:#555;
+            margin:4px 0 0;
+        }
+
+        /* ===== Sections ===== */
+        .section-title{
+            font-size:13px;
+            font-weight:600;
+            margin:14px 0 8px;
+            padding-left:10px;
+            border-left:3px solid #111;
+        }
+
+        /* ===== KPI GRID ===== */
+        .kpi-grid{
+            width:100%;
+            display:table;
+            table-layout:fixed;
+            border-spacing:10px;
+            margin:0 0 8px;
+        }
+        .kpi{
+            display:table-cell;
+            vertical-align:top;
+            padding:12px 12px 10px;
+            border:1px solid #e5e7eb;
+            border-radius:12px;
+            background:#fff;
+            page-break-inside: avoid;
+        }
+        .kpi .kpi-title{
+            font-size:10px;
+            color:#666;
+            text-transform:uppercase;
+            letter-spacing:.3px;
+            margin:0 0 6px;
+            font-weight:500;
+        }
+        .kpi .kpi-value{
+            font-size:14px;
+            font-weight:600;
+            margin:0;
+            line-height:1.1;
+        }
+        .kpi .kpi-hint{
+            margin-top:6px;
+            font-size:10px;
+            color:#666;
+            line-height:1.25;
+        }
+
+        /* ===== Tabela ===== */
+        table{
+            width:100%;
+            border-collapse:collapse;
+            margin-top:8px;
+            border:1px solid #e5e7eb;
+            table-layout:fixed;
+        }
+
+        /* ✅ repete cabeçalho da tabela em novas páginas */
+        thead{ display: table-header-group; }
+        /* ✅ evita quebrar a linha no meio */
+        tr{ page-break-inside: avoid; }
+
+        th, td{
+            border-bottom:1px solid #e5e7eb;
+            padding:8px;
+            font-size:11px;
+            vertical-align:top;
+            word-break: break-word;
+        }
+        th{
+            background:#f3f4f6;
+            text-align:left;
+            font-size:11px;
+            font-weight:500;
+        }
+        tbody tr:nth-child(even) td{ background:#fafafa; }
+
+        /* ===== Footer fixo (toda página) ===== */
+        .pdf-footer{
+            position: fixed;
+            left:14mm;
+            right:14mm;
+            bottom:10mm;
+            border-top:1px solid #e5e7eb;
+            padding-top:6px;
+            font-size:10px;
+            font-weight:400;
+            color:#666;
+            background:#fff;
+            z-index: 20;
+        }
+        .footer-left{ float:left; }
+        .footer-center{ float:left; margin-left:18px; }
+        .footer-right{ float:right; }
+        .sep{ margin:0 6px; color:#999; }
+        .clearfix::after{ content:""; display:block; clear:both; }
+
+        .page-number:before{ content: counter(page); }
+        .page-count:before{ content: counter(pages); }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <!-- RAID (padrão global) -->
+    <div th:replace="pdf/fragments/raid :: raid(
+        'Relatório de Hospedagens',
+        'Histórico de Hospedagens',
+        ${r},
+        ${pousadaNome},
+        ${pousadaSubtitulo}
+    )"></div>
+
+    <!-- KPIs -->
+    <div class="section-title">Indicadores principais</div>
+
+    <div class="kpi-grid avoid-break">
+        <div class="kpi">
+            <p class="kpi-title">Hospedagens ativas</p>
+            <p class="kpi-value" th:text="${r.resumo.totalAtivas}">0</p>
+            <div class="kpi-hint">Com check-in realizado.</div>
+        </div>
+
+        <div class="kpi">
+            <p class="kpi-title">Hospedagens finalizadas</p>
+            <p class="kpi-value" th:text="${r.resumo.totalInativas}">0</p>
+            <div class="kpi-hint">Encerradas no período.</div>
+        </div>
+
+        <div class="kpi">
+            <p class="kpi-title">Diárias vendidas</p>
+            <p class="kpi-value" th:text="${r.resumo.diariasVendidas}">0</p>
+            <div class="kpi-hint">Total de diárias consumidas.</div>
+        </div>
+
+        <div class="kpi">
+            <p class="kpi-title">Ticket médio (R$)</p>
+            <p class="kpi-value"
+               th:text="${r.resumo.ticketMedio != null ? #numbers.formatDecimal(r.resumo.ticketMedio,1,'POINT',2,'COMMA') : '0,00'}">
+                0,00
+            </p>
+            <div class="kpi-hint">Valor médio por hospedagem.</div>
+        </div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="section-title">Hospedagens</div>
+
+    <table>
+        <thead>
+        <tr>
+            <th style="width:10%;">Código</th>
+            <th style="width:22%;">Hóspede</th>
+            <th style="width:8%;">Quarto</th>
+            <th style="width:7%;">Diárias</th>
+            <th style="width:12%;">Entrada</th>
+            <th style="width:12%;">Saída</th>
+            <th style="width:13%;">Pagamento</th>
+            <th style="width:16%;">Criado por</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="l : ${r.linhas}">
+            <td class="nowrap" th:text="${l.codigo}">H-001</td>
+            <td th:text="${l.hospede}">Fulano</td>
+            <td class="nowrap" th:text="${l.quarto}">101</td>
+            <td class="center" th:text="${l.diarias != null ? l.diarias : 0}">2</td>
+            <td class="nowrap" th:text="${l.entrada != null ? #temporals.format(l.entrada,'dd/MM/yyyy') : ''}">01/11/2025</td>
+            <td class="nowrap" th:text="${l.saida != null ? #temporals.format(l.saida,'dd/MM/yyyy') : ''}">03/11/2025</td>
+            <td th:text="${l.formaPagamento}">PIX</td>
+            <td th:text="${l.criadoPor}">Admin</td>
+        </tr>
+
+        <tr th:if="${r.linhas == null or #lists.isEmpty(r.linhas)}">
+            <td colspan="8" class="center muted" style="padding:12px;">
+                Sem hospedagens no período.
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<!-- FOOTER (fixo e padronizado) -->
+<div th:replace="pdf/fragments/footer :: footer(${pousadaNome}, ${r.geradoEm}, ${r.geradoPor})"></div>
+
+</body>
+</html>

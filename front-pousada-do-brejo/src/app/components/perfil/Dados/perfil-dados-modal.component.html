@@ -1,0 +1,472 @@
+<!-- MODAL ROOT -->
+<div *ngIf="open" class="fixed inset-0 z-[60] flex items-center justify-center">
+  <!-- Backdrop (click fora fecha) -->
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="fechar()"></div>
+
+  <!-- Card -->
+  <div
+    class="relative z-[61] w-[92vw] sm:w-full max-w-[760px]
+           rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto overscroll-contain
+           border p-4 sm:p-6 md:p-7
+           bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-color)]"
+  >
+    <!-- Fechar -->
+    <button
+      type="button"
+      (click)="fechar()"
+      aria-label="Fechar"
+      class="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center
+             rounded-full text-[var(--text-dim)] transition
+             hover:bg-red-50 hover:text-red-500
+             focus:outline-none focus:ring-2 focus:ring-red-300"
+    >
+      <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 6l12 12M18 6L6 18"></path>
+      </svg>
+    </button>
+
+    <!-- HEADER -->
+    <div class="mb-6 flex items-center gap-4 sm:gap-5">
+      <!-- AVATAR MAIOR + MENU -->
+      <div class="relative" (keydown.escape)="closeAvatarMenu()">
+        <div
+          class="group relative grid h-20 w-20 sm:h-24 sm:w-24 place-items-center rounded-full overflow-hidden select-none
+                 text-white font-bold text-xl sm:text-2xl
+                 shadow-lg ring-2 ring-[var(--border-color)] ring-offset-2 ring-offset-[var(--bg-card)]
+                 transition"
+          [ngClass]="{
+            'bg-gradient-to-br from-sky-500 to-indigo-500': (me()?.avatar?.mode!=='COLOR'),
+            'ring-indigo-200': avatarMenuOpen(),
+            'ring-[var(--border-color)]': !avatarMenuOpen()
+          }"
+          [style.background]="me()?.avatar?.mode==='COLOR' ? (me()?.avatar?.color || '#64748B') : null"
+        >
+          <!-- Foto -->
+          <img
+            *ngIf="me()?.avatar?.mode==='PHOTO' && me()?.avatar?.dataUrl"
+            [src]="me()?.avatar?.dataUrl"
+            alt="Foto de perfil"
+            class="h-full w-full object-cover"
+            loading="lazy"
+            referrerpolicy="no-referrer"
+          />
+
+          <!-- Iniciais -->
+          <span *ngIf="me()?.avatar?.mode!=='PHOTO'" class="relative z-10">
+            {{ iniciais() }}
+          </span>
+
+          <!-- Botão editar (overlay) -->
+          <button
+            type="button"
+            class="absolute inset-0 flex items-center justify-center rounded-full
+                   bg-black/35 opacity-0 group-hover:opacity-100 focus:opacity-100
+                   outline-none focus:ring-2 focus:ring-[var(--accent-yellow)] transition"
+            (click)="toggleAvatarMenu($event)"
+            aria-haspopup="menu"
+            [attr.aria-expanded]="avatarMenuOpen()"
+            title="Editar avatar"
+          >
+            <svg class="h-5 w-5 text-white drop-shadow" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Menu Avatar -->
+        <div
+          *ngIf="avatarMenuOpen()"
+          class="absolute z-[70] mt-2 w-64 rounded-xl shadow-xl border
+                 bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-color)]"
+          (click)="$event.stopPropagation()"
+          role="menu"
+        >
+          <button
+            class="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm rounded-lg transition
+                   hover:bg-[var(--table-row-hover)] focus:bg-[var(--table-row-hover)] focus:outline-none"
+            (click)="triggerFile()"
+            role="menuitem"
+          >
+            <svg class="h-4 w-4 text-[var(--text-dim)]" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 7v13a2 2 0 0 0 2 2h12"></path>
+              <path d="M20 7V5a2 2 0 0 0-2-2h-5l-2 2H6a2 2 0 0 0-2 2v0"></path>
+              <path d="M12 12v6"></path><path d="M9 15h6"></path>
+            </svg>
+            <span>Enviar foto…</span>
+          </button>
+
+          <div class="px-3 pt-2 text-[11px] font-semibold uppercase text-[var(--text-dim)]">
+            Cores
+          </div>
+          <div class="flex flex-wrap gap-2 p-3 pt-2">
+            <button *ngFor="let c of palette"
+                    class="h-7 w-7 rounded-full border hover:scale-105 transition"
+                    [style.background]="c"
+                    [style.borderColor]="'var(--border-color)'"
+                    (click)="setColor(c)"
+                    aria-label="Escolher cor">
+            </button>
+          </div>
+        </div>
+
+        <!-- input oculto -->
+        <input #fileChooser type="file" accept="image/png,image/jpeg" class="hidden" (change)="startCrop($event)">
+      </div>
+
+      <!-- Título -->
+      <div class="min-w-0">
+        <h3 class="text-lg sm:text-xl font-semibold leading-tight">Meu perfil</h3>
+        <p class="text-sm text-[var(--text-dim)]">Atualize suas informações pessoais.</p>
+      </div>
+    </div>
+
+    <!-- Aviso carregando -->
+    <div *ngIf="carregando()"
+         class="mb-4 rounded-xl px-4 py-3 text-sm
+                bg-[var(--table-row-hover)] text-[var(--text-dim)] border border-[var(--border-color)]">
+      Carregando dados…
+    </div>
+
+    <!-- FORM -->
+    <form [formGroup]="form" (ngSubmit)="salvar()" class="space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Nome -->
+        <div>
+          <label for="nome" class="text-xs font-semibold text-[var(--text-dim)]">Nome</label>
+          <div class="relative mt-1">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+              <svg class="h-4 w-4 text-[var(--text-dim)]" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <input
+              id="nome"
+              formControlName="nome"
+              type="text"
+              autocomplete="name"
+              class="w-full rounded-xl border py-3 pl-10 pr-3 outline-none transition
+                     bg-[var(--bg-color)] text-[var(--text-color)]
+                     border-[var(--border-color)]
+                     focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]"
+            />
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label for="email" class="text-xs font-semibold text-[var(--text-dim)]">E-mail</label>
+          <div class="relative mt-1">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+              <svg class="h-4 w-4 text-[var(--text-dim)]" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </div>
+            <input
+              id="email"
+              formControlName="email"
+              type="email"
+              autocomplete="email"
+              class="w-full rounded-xl border py-3 pl-10 pr-3 outline-none transition
+                     bg-[var(--bg-color)] text-[var(--text-color)]
+                     border-[var(--border-color)]
+                     focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]"
+            />
+          </div>
+        </div>
+
+        <!-- Número -->
+        <div>
+          <label for="numero" class="text-xs font-semibold text-[var(--text-dim)]">Número</label>
+          <div class="relative mt-1">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+              <svg class="h-4 w-4 text-[var(--text-dim)]" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+            </div>
+            <input
+              id="numero"
+              formControlName="numero"
+              type="text"
+              inputmode="numeric"
+              autocomplete="tel"
+              (input)="onNumeroInput($event)"
+              (paste)="onNumeroPaste($event)"
+              placeholder="(99) 99999-9999"
+              class="w-full rounded-xl border py-3 pl-10 pr-3 outline-none transition
+                     bg-[var(--bg-color)] text-[var(--text-color)]
+                     border-[var(--border-color)]
+                     focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]"
+            />
+          </div>
+        </div>
+
+        <!-- Username -->
+        <div>
+          <label for="username" class="text-xs font-semibold text-[var(--text-dim)]">Username</label>
+          <div class="relative mt-1">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+              <span class="text-[var(--text-dim)] font-medium">&#64;</span>
+            </div>
+            <input
+              id="username"
+              formControlName="username"
+              type="text"
+              autocomplete="username"
+              class="w-full rounded-xl border py-3 pl-10 pr-3 outline-none transition
+                     bg-[var(--bg-color)] text-[var(--text-color)]
+                     border-[var(--border-color)]
+                     focus:ring-2 focus:ring-[var(--accent-yellow)] focus:border-[var(--accent-yellow)]"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Ações -->
+      <div class="mt-6 flex flex-col-reverse sm:flex-row justify-end gap-2">
+        <button
+          type="button"
+          (click)="fechar()"
+          class="rounded-xl px-5 py-2.5 text-sm font-medium transition
+                 border bg-[var(--bg-card)] text-[var(--text-color)]
+                 border-[var(--border-color)]
+                 hover:bg-[var(--table-row-hover)]"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="submit"
+          [disabled]="salvando()"
+          class="inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold text-white
+                 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed transition"
+        >
+          <svg *ngIf="salvando()" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+
+          <svg *ngIf="!salvando()" class="-ml-1 mr-2 h-4 w-4 text-white" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+
+          <span>{{ salvando() ? 'Salvando…' : 'Salvar Alterações' }}</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- CROP MODAL -->
+<div *ngIf="cropOpen" class="fixed inset-0 z-[80] flex items-center justify-center p-2 sm:p-4">
+  <!-- backdrop -->
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="cancelCrop()"></div>
+
+  <!-- crop card -->
+<div
+  class="relative z-[81]
+         flex flex-col
+         w-full h-full max-w-none
+         bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-color)]
+         border shadow-2xl rounded-none
+         sm:w-full sm:h-auto sm:max-w-4xl sm:max-h-[90vh] sm:rounded-xl
+         overflow-hidden"
+>
+
+    <!-- header -->
+    <div
+      class="flex items-center justify-between px-4 sm:px-6 py-4 shrink-0 border-b
+             bg-[var(--bg-card)] border-[var(--border-color)]"
+    >
+      <h3 class="text-xl font-bold text-[var(--text-color)]">Ajustar Foto de Perfil</h3>
+      <button
+        class="h-10 w-10 grid place-items-center rounded-full text-[var(--text-dim)] transition-colors
+               hover:bg-[var(--table-row-hover)]"
+        (click)="cancelCrop()"
+        aria-label="Fechar"
+      >
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- body -->
+    <div class="flex-1 overflow-auto p-4 sm:p-6">
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <!-- coluna esquerda -->
+        <div class="space-y-4">
+          <div
+            class="rounded-lg border p-4
+                   bg-[var(--bg-color)] border-[var(--border-color)]"
+          >
+            <span
+              class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold mb-3
+                     bg-blue-50 text-blue-700"
+            >
+              ÁREA DE EDIÇÃO
+            </span>
+
+            <div
+              class="rounded-lg p-1 border
+                     bg-[var(--table-row-hover)] border-[var(--border-color)]"
+            >
+              <image-cropper
+                [imageChangedEvent]="imageChangedEvent"
+                [maintainAspectRatio]="true"
+                [aspectRatio]="1"
+                [resizeToWidth]="512"
+                [roundCropper]="false"
+                format="png"
+                outputType="both"
+                (imageCropped)="onCropped($event)"
+                style="max-height: 400px; width: 100%;"
+              >
+              </image-cropper>
+            </div>
+          </div>
+
+          <div
+            class="rounded-lg border p-4
+                   bg-[var(--bg-color)] border-[var(--border-color)]"
+          >
+            <h4 class="text-sm font-semibold text-[var(--text-dim)] mb-3">
+              COMO USAR
+            </h4>
+            <ul class="text-sm text-[var(--text-dim)] space-y-2">
+              <li class="flex items-center gap-3">
+                <svg class="h-5 w-5 text-[var(--text-dim)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                </svg>
+                <span>Use o <strong class="font-semibold text-[var(--text-color)]">scroll do mouse</strong> para dar zoom.</span>
+              </li>
+
+              <li class="flex items-center gap-3">
+                <svg class="h-5 w-5 text-[var(--text-dim)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                <span><strong class="font-semibold text-[var(--text-color)]">Clique e arraste</strong> para mover a imagem.</span>
+              </li>
+
+              <li class="flex items-center gap-3">
+                <svg class="h-5 w-5 text-[var(--text-dim)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 4v5h5M20 20v-5h-5" />
+                </svg>
+                <span>Segure <strong class="font-semibold text-[var(--text-color)]">SHIFT e arraste</strong> para rotacionar.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- coluna direita (preview) -->
+        <div
+          class="rounded-lg border p-6 flex flex-col items-center justify-center text-center h-full
+                 bg-[var(--bg-color)] border-[var(--border-color)]"
+        >
+          <h4 class="text-base font-bold text-[var(--text-color)] mb-1">PRÉ-VISUALIZAÇÃO</h4>
+          <p class="text-sm text-[var(--text-dim)] mb-6">Sua foto de perfil aparecerá assim.</p>
+
+          <img
+            *ngIf="croppedImage"
+            [src]="croppedImage"
+            alt="Pré-visualização da foto"
+            class="h-40 w-40 rounded-full object-cover border-4 border-green-500 shadow-md"
+          />
+
+          <div
+            *ngIf="!croppedImage"
+            class="h-40 w-40 rounded-full grid place-items-center border-2 border-dashed
+                   bg-[var(--table-row-hover)] border-[var(--border-color)]"
+          >
+            <svg class="h-16 w-16 text-[var(--text-dim)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+
+          <div class="mt-auto pt-6">
+            <span
+              class="font-semibold px-4 py-2 rounded-full text-sm border"
+              [ngClass]="{
+                'bg-green-50 text-green-700 border-green-200': croppedImage,
+                'bg-yellow-50 text-yellow-700 border-yellow-200': !croppedImage
+              }"
+            >
+              {{ croppedImage ? 'Pronta para usar' : 'Aguardando ajustes' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- footer -->
+    <div
+      class="px-4 sm:px-6 py-4 shrink-0 border-t
+             bg-[var(--bg-card)] border-[var(--border-color)]"
+    >
+      <div class="flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
+        <button
+          class="w-full sm:w-auto rounded-md px-5 py-2.5 text-sm font-semibold transition-colors
+                 border bg-[var(--bg-card)] text-[var(--text-color)]
+                 border-[var(--border-color)]
+                 hover:bg-[var(--table-row-hover)]"
+          (click)="cancelCrop()"
+        >
+          Cancelar
+        </button>
+
+        <button
+          class="w-full sm:w-auto rounded-md px-5 py-2.5 text-sm font-semibold text-white flex items-center justify-center gap-2 transition-colors
+                 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:bg-slate-400"
+          [disabled]="!croppedImage || salvandoAvatar()"
+          (click)="confirmCrop()"
+        >
+          <!-- Spinner enquanto aplica -->
+          <svg
+            *ngIf="salvandoAvatar()"
+            class="h-5 w-5 animate-spin"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle>
+            <path
+              class="opacity-75"
+              stroke-width="4"
+              d="M4 12a8 8 0 018-8"
+            ></path>
+          </svg>
+
+          <!-- Ícone normal -->
+          <svg
+            *ngIf="!salvandoAvatar()"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+          </svg>
+
+          <span>{{ salvandoAvatar() ? 'Aplicando…' : 'Aplicar Foto' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

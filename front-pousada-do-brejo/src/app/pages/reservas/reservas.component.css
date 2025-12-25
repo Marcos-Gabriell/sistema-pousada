@@ -1,0 +1,629 @@
+/* Estilos para o DatePicker estilo Airbnb */
+.airbnb-style-datepicker .mat-calendar {
+  border-radius: 12px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+}
+
+.airbnb-style-datepicker .mat-datepicker-content {
+  border-radius: 12px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12) !important;
+  min-width: 600px;
+}
+
+.airbnb-style-datepicker .mat-calendar-header {
+  background: #FF385C;
+  color: white;
+  border-radius: 12px 12px 0 0;
+  padding: 16px;
+}
+
+.airbnb-style-datepicker .mat-calendar-controls {
+  margin: 0 !important;
+  padding: 0 16px 16px;
+}
+
+.airbnb-style-datepicker .mat-calendar-period-button {
+  color: white !important;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.airbnb-style-datepicker .mat-calendar-arrow {
+  border-top-color: white !important;
+}
+
+.airbnb-style-datepicker .mat-calendar-previous-button,
+.airbnb-style-datepicker .mat-calendar-next-button {
+  color: white !important;
+}
+
+.airbnb-style-datepicker .mat-calendar-body-label {
+  color: #484848;
+  font-weight: 600;
+}
+
+.airbnb-style-datepicker .mat-calendar-body-cell-content {
+  border-radius: 50%;
+  font-weight: 500;
+}
+
+.airbnb-style-datepicker .mat-calendar-body-selected {
+  background-color: #FF385C !important;
+  color: white !important;
+}
+
+.airbnb-style-datepicker .mat-calendar-body-in-range::before {
+  background: #FFE5E9;
+}
+
+.airbnb-style-datepicker .mat-calendar-body-today {
+  border-color: #FF385C;
+}
+
+/* Estilos gerais do Material */
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+.mat-mdc-text-field-wrapper {
+  background-color: white !important;
+  border-radius: 8px !important;
+}
+
+.mat-mdc-form-field.mat-focused .mat-mdc-form-field-focus-overlay {
+  background-color: transparent !important;
+}
+
+.mat-mdc-form-field-appearance-outline .mat-mdc-form-field-outline-thick {
+  color: #FF385C !important;
+}
+
+.mat-mdc-form-field.mat-focused .mat-mdc-form-field-outline-thick {
+  color: #FF385C !important;
+}
+
+/* Ajustes para os selects */
+.mat-mdc-select-panel {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Botões desabilitados */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+  .mat-mdc-form-field {
+    font-size: 14px;
+  }
+  
+  .mat-mdc-form-field-subscript-wrapper {
+    display: none;
+  }
+  
+  .airbnb-style-datepicker .mat-datepicker-content {
+    min-width: unset;
+    width: 95vw;
+  }
+}
+
+/* Animações suaves */
+.mat-datepicker-content {
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Melhorias visuais para os campos */
+.mat-mdc-form-field.mat-form-field-appearance-outline.mat-focused .mat-mdc-form-field-outline-thick {
+  color: #FF385C;
+}
+
+.mat-mdc-form-field.mat-form-field-appearance-outline .mat-mdc-form-field-outline {
+  color: #d1d5db;
+}
+
+/* Estilo para o botão de toggle do datepicker */
+.mat-datepicker-toggle {
+  color: var(--text-dim) !important;
+}
+.mat-datepicker-toggle:hover {
+
+  /* Small spinner used inside action buttons during generation/download */
+  .btn-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    display: inline-block;
+    vertical-align: middle;
+    animation: spin 0.8s linear infinite;
+  }
+  color: var(--accent-yellow) !important;
+}
+/* Ajustes para o range picker */
+.mat-date-range-input-inner {
+  font-size: 14px;
+}
+
+/* Melhorias de acessibilidade */
+.mat-calendar-body-cell:focus {
+  background-color: rgba(255, 56, 92, 0.1);
+}
+
+/* Loading states */
+.carregando {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Estados de hover para tabela */
+.hover\\:bg-gray-50:hover {
+  background-color: #f9fafb;
+}
+
+/* Transições suaves */
+.transition {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Sombras e efeitos visuais */
+.shadow {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.shadow-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Foco visível para acessibilidade */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none !important;
+}
+button:focus-visible {
+  outline: 2px solid var(--accent-yellow);
+  outline-offset: 2px;
+}
+
+/* Estados de loading */
+.carregando-quartos::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f4f6;
+  border-top: 2px solid #FF385C;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+
+/* ======== BORDA AMARELA NOS CAMPOS PADRÃO ======== */
+/* 1) Inputs nativos: sem glow/ring/outline */
+input[type="text"],
+input[type="date"],
+input[type="number"],
+textarea,
+select {
+  outline: none !important;
+  box-shadow: none !important;
+  /* neutraliza o ring do Tailwind */
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--accent-yellow) !important;
+  box-shadow: none !important;   /* sem brilho */
+  outline: none !important;      /* sem contorno externo */
+}
+
+/* ======== CAMPOS MATERIAL EM FOCO (outline amarelo) ======== */
+.mat-mdc-form-field-appearance-outline .mdc-notched-outline__leading,
+.mat-mdc-form-field-appearance-outline .mdc-notched-outline__notch,
+.mat-mdc-form-field-appearance-outline .mdc-notched-outline__trailing {
+  border-width: 1px !important;
+  border-radius: 10px !important;
+}
+
+.airbnb-range-field.mat-mdc-form-field-appearance-outline.mat-focused
+  .mdc-notched-outline__leading,
+.airbnb-range-field.mat-mdc-form-field-appearance-outline.mat-focused
+  .mdc-notched-outline__notch,
+.airbnb-range-field.mat-mdc-form-field-appearance-outline.mat-focused
+  .mdc-notched-outline__trailing {
+  border-color: var(--accent-yellow) !important;
+  box-shadow: none !important;
+}
+/* ícone do calendário */
+.airbnb-range-field .mat-mdc-icon-button.mat-mdc-button-base {
+  color: var(--text-dim) !important;
+  border-radius: 9999px !important;
+  transition: all .15s ease-in-out;
+}
+.airbnb-range-field .mat-mdc-icon-button.mat-mdc-button-base:hover {
+  color: var(--accent-yellow) !important;
+  background-color: var(--table-row-hover) !important;
+}
+
+/* ======== POPUP DO RANGE PICKER ESTILO AIRBNB ======== */
+.airbnb-datepanel .mat-datepicker-content,
+.airbnb-datepanel .mat-date-range-picker-content,
+.airbnb-datepanel .mat-calendar {
+  background: var(--bg-card) !important;
+  color: var(--text-color) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 24px 60px rgba(0,0,0,.6) !important;
+  border: 1px solid var(--border-color) !important;
+  padding-bottom: 16px !important;
+  min-width: 680px; /* 2 meses lado a lado, tipo Airbnb */
+  max-width: 90vw;
+}
+
+/* header "Datas | Meses | Flexível" fake-look */
+.airbnb-datepanel .mat-calendar-header {
+  border-bottom: 0 !important;
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: transparent !important;
+}
+.airbnb-datepanel .mat-calendar-header > div:first-child {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  background: var(--bg-card);
+}
+.airbnb-datepanel .mat-calendar-header > div:first-child::before {
+  content: 'Datas  Meses  Flexível';
+  font-size: 13px;
+  line-height: 1;
+  background: var(--bg-card);
+  border-radius: 9999px;
+  padding: 8px 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 20px rgba(0,0,0,.4);
+  color: var(--text-color);
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* mês/ano título + setinhas */
+.airbnb-datepanel .mat-calendar-controls {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 24px 4px;
+  color: var(--text-color) !important;
+  font-weight: 600;
+  font-size: 15px;
+}
+.airbnb-datepanel .mat-calendar-previous-button,
+.airbnb-datepanel .mat-calendar-next-button {
+  color: var(--text-color) !important;
+  background: var(--bg-card) !important;
+  border-radius: 9999px !important;
+  border: 1px solid var(--border-color) !important;
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.5);
+}
+.airbnb-datepanel .mat-calendar-previous-button:hover,
+.airbnb-datepanel .mat-calendar-next-button:hover {
+  color: var(--accent-yellow) !important;
+  border-color: var(--accent-yellow) !important;
+}
+
+/* header dos dias da semana */
+.airbnb-datepanel .mat-calendar-table-header th {
+  color: var(--text-dim) !important;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* cada dia */
+.airbnb-datepanel .mat-calendar-body-cell {
+  position: relative;
+  font-weight: 500;
+  color: var(--text-color) !important;
+}
+.airbnb-datepanel .mat-calendar-body-cell-content {
+  border-radius: 9999px !important;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+}
+
+/* day hover */
+.airbnb-datepanel .mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover .mat-calendar-body-cell-content {
+  background: rgba(255,255,255,0.07) !important;
+  outline: 1px solid var(--accent-yellow) !important;
+  color: var(--text-color) !important;
+}
+
+/* dia selecionado (início ou fim) */
+.airbnb-datepanel .mat-calendar-body-selected {
+  background: var(--accent-yellow) !important;
+  color: #000 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.6);
+}
+
+/* range entre start e end */
+.airbnb-datepanel .mat-date-range-preview,
+.airbnb-datepanel .mat-calendar-body-in-range::before {
+  background: rgba(255, 255, 0, 0.08) !important; /* amarelo translúcido */
+  border-radius: 0 !important;
+}
+
+/* hoje */
+.airbnb-datepanel .mat-calendar-body-today:not(.mat-calendar-body-selected) {
+  border-color: var(--accent-yellow) !important;
+  color: var(--accent-yellow) !important;
+  font-weight: 600;
+}
+
+/* responsivo */
+@media (max-width: 640px) {
+  .airbnb-datepanel .mat-datepicker-content,
+  .airbnb-datepanel .mat-date-range-picker-content,
+  .airbnb-datepanel .mat-calendar {
+    min-width: 90vw !important;
+    max-width: 90vw !important;
+    border-radius: 16px !important;
+  }
+}
+
+/* Remove o padding extra do mat-form-field para alinhar com os outros inputs */
+.custom-range-field-modal .mat-form-field-wrapper {
+  padding-bottom: 0;
+}
+
+/* Ajusta a altura para bater com seus outros inputs de 40px (h-10) */
+.custom-range-field-modal .mat-form-field-flex {
+  height: 40px !important;
+  align-items: center;
+}
+
+.custom-range-field-modal .mat-form-field-outline-start,
+.custom-range-field-modal .mat-form-field-outline-end,
+.custom-range-field-modal .mat-form-field-outline-gap {
+  border-width: 1px !important; /* Garante a borda correta */
+}
+/* ====== MODAL SUCESSO RESERVA (claro/escuro) ====== */
+.reserva-success-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--backdrop-strong, rgba(0,0,0,.55));
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.reserva-success-modal {
+  width: min(44rem, 100%);
+  background: var(--bg-card);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 1.1rem;
+  box-shadow: 0 24px 50px rgba(0,0,0,.35);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* header */
+.rsm-header {
+  display: flex;
+  gap: .75rem;
+  padding: 1.3rem 1.5rem .4rem 1.5rem;
+  align-items: flex-start;
+}
+.rsm-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: rgba(22,163,74,.12);
+  color: #22c55e;
+  border: 1px solid rgba(22,163,74,.35);
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+.rsm-title { font-size: 1.05rem; font-weight: 650; }
+.rsm-subtitle {
+  font-size: .78rem;
+  color: var(--text-dim);
+  margin-top: .2rem;
+}
+.rsm-close {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: .95rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* body */
+.rsm-body {
+  padding: 0 1.5rem .5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.rsm-line { font-size: .85rem; }
+.rsm-bold { font-weight: 600; }
+
+/* infos */
+.rsm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: .75rem 1.5rem;
+}
+.rsm-block { display: flex; flex-direction: column; gap: .25rem; }
+.rsm-span { grid-column: 1 / -1; }
+.rsm-label {
+  font-size: .7rem;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  color: var(--text-dim);
+}
+.rsm-code {
+  font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: .8rem;
+}
+.rsm-value { font-weight: 600; }
+
+/* orientações */
+.rsm-tips {
+  background: color-mix(in srgb, var(--bg-card) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-color) 85%, transparent);
+  border-radius: .85rem;
+  padding: .75rem .9rem .85rem;
+}
+.rsm-tips-title {
+  font-weight: 600;
+  font-size: .78rem;
+  margin-bottom: .4rem;
+}
+.rsm-tips-list {
+  margin: 0;
+  padding-left: 1.15rem;
+  display: grid;
+  gap: .4rem;
+}
+.rsm-tips-list li {
+  font-size: .78rem;
+  line-height: 1.35;
+}
+
+/* footer */
+.rsm-footer {
+  padding: 0 1.5rem 1.25rem 1.5rem;
+  display: flex;
+  gap: .75rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.rsm-btn-secondary,
+.rsm-btn-primary {
+  border-radius: .65rem;
+  font-size: .78rem;
+  font-weight: 600;
+  padding: .55rem 1.15rem;
+  display: inline-flex;
+  gap: .35rem;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+}
+.rsm-btn-secondary {
+  background: color-mix(in srgb, var(--bg-card) 88%, #0000);
+  border: 1px solid color-mix(in srgb, var(--border-color) 85%, #0000);
+  color: var(--text-color);
+}
+.rsm-btn-secondary:hover {
+  background: var(--table-row-hover);
+}
+.rsm-btn-primary {
+  background: #16a34a;
+  color: #fff;
+}
+.rsm-btn-primary:hover {
+  background: #15803d;
+}
+
+/* responsivo */
+@media (max-width: 640px) {
+  .reserva-success-modal { border-radius: 1rem; }
+  .rsm-grid { grid-template-columns: 1fr; }
+  .rsm-footer { flex-direction: column-reverse; align-items: stretch; }
+}
+
+.reserva-success-modal {
+  position: relative;
+}
+
+.rsm-close {
+  position: absolute; 
+  top: 16px; 
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  background-color: var(--rsm-btn-secondary-bg, transparent);
+  color: var(--text-dim);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  z-index: 10;
+  transition: background-color .15s ease, color .12s ease;
+}
+
+.rsm-close:hover {
+  background-color: var(--rsm-btn-secondary-hover, var(--table-row-hover));
+  color: #ef4444; /* red-500 */
+}
+
+.cdk-overlay-container .cdk-overlay-pane {
+  z-index: 10050 !important;
+}
+
+.rsm-close span { color: inherit; }
+.rsm-close:hover span { color: inherit; }
+
+
+
+.btn-spinner-dark {
+  width: 22px;
+  height: 22px;
+  border: 3px solid var(--accent-yellow);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
