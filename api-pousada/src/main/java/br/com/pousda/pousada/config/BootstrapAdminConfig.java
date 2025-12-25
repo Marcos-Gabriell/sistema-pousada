@@ -12,7 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Slf4j
 @Configuration
@@ -20,10 +21,11 @@ import java.util.*;
 public class BootstrapAdminConfig {
 
     private final UsuarioRepository repo;
-    private final PasswordEncoder encoder;   // pode ser BCryptPasswordEncoder
+    private final PasswordEncoder encoder;
     private final Environment env;
 
-    private static final String DEV_LOGIN_DEFAULT = "Pousadabrejo@DEV2025";
+    private static final String DEV_ADMIN_USER_DEFAULT = "admin";
+    private static final String DEV_ADMIN_PASS_DEFAULT = "admin123";
 
     @Bean
     @Transactional
@@ -31,79 +33,66 @@ public class BootstrapAdminConfig {
         return args -> {
             final String appEnv = opt("APP_ENV", "dev").toLowerCase();
 
-            if (!devExists()) {
-                final String devLogin  = opt("DEV_INIT_LOGIN", DEV_LOGIN_DEFAULT);
-                final String devNumero = requireNumero(appEnv, "DEV_INIT_NUMERO", "55988888888");
-                final String bcrypt    = opt("DEV_INIT_PASSWORD_BCRYPT", null);
-                final String raw       = opt("DEV_INIT_PASSWORD", null);
+            if (!adminExists()) {
+                final String username = opt("ADMIN_INIT_USERNAME", DEV_ADMIN_USER_DEFAULT);
+                final String email    = opt("ADMIN_INIT_EMAIL", "admin@local");
+                final String numero   = opt("ADMIN_INIT_NUMERO", "55988888888");
+
+                final String bcrypt = opt("ADMIN_INIT_PASSWORD_BCRYPT", null);
+                final String raw    = opt("ADMIN_INIT_PASSWORD", DEV_ADMIN_PASS_DEFAULT);
 
                 if ("prod".equals(appEnv) && !isBcrypt(bcrypt)) {
-                    throw new IllegalStateException("Em produção, defina DEV_INIT_PASSWORD_BCRYPT (hash bcrypt).");
+                    throw new IllegalStateException("Em produção, defina ADMIN_INIT_PASSWORD_BCRYPT (hash bcrypt).");
                 }
 
-                final String devPwdHash =
-                        isBcrypt(bcrypt) ? bcrypt :
-                                (raw != null && !raw.trim().isEmpty() ? encoder.encode(raw.trim()) : null);
+                final String pwdHash = isBcrypt(bcrypt) ? bcrypt : encoder.encode(raw);
 
-                if (devPwdHash == null) {
-                    throw new IllegalStateException("Defina DEV_INIT_PASSWORD_BCRYPT (hash) ou DEV_INIT_PASSWORD (texto).");
+                if (repo.findByUsername(username).isPresent() || repo.findByEmail(email).isPresent()) {
+                    throw new IllegalStateException("ADMIN já está em uso (username/email).");
                 }
 
-                if (repo.findByUsername(devLogin).isPresent() || repo.findByEmail(devLogin).isPresent()) {
-                    throw new IllegalStateException("Login do DEV já está em uso: " + devLogin);
-                }
+                Usuario admin = new Usuario();
+                admin.setUsername(username);
+                admin.setEmail(email);
+                admin.setNumero(numero);
+                admin.setNome("ADMIN");
+                admin.setPassword(pwdHash);
 
-                Usuario dev = new Usuario();
-                dev.setUsername(devLogin);
-                dev.setEmail(devLogin);
-                dev.setNumero(devNumero);
-                dev.setNome("DEV");
-                dev.setPassword(devPwdHash);
-                dev.setRole("DEV");
-                dev.setAtivo(true);
-                dev.setBootstrapAdmin(false);
+                admin.setRole("ADMIN");
 
-                // senha permanente (não força troca no primeiro login)
-                dev.setMustChangePassword(false);
-                dev.setPwdChangeReason(null);
-                dev.setLastPasswordChangeAt(LocalDateTime.now());
+                admin.setAtivo(true);
+                admin.setBootstrapAdmin(true);
 
-                dev.setInativadoEm(null);
+                admin.setMustChangePassword(false);
+                admin.setPwdChangeReason(null);
+                admin.setLastPasswordChangeAt(LocalDateTime.now());
+                admin.setInativadoEm(null);
 
-                repo.save(dev);
-                log.info("=== DEV criado com login {} (env: {}) ===", devLogin, appEnv);
+                repo.save(admin);
+                log.info("=== ADMIN criado: {} (env: {}) ===", username, appEnv);
             } else {
-                log.debug("Bootstrap DEV não necessário (já existe pelo menos 1 DEV).");
+                log.debug("Bootstrap ADMIN não necessário (já existe).");
             }
         };
     }
 
-    /** Verifica existência de pelo menos um usuário DEV usando os métodos disponíveis no repositório. */
-    private boolean devExists() {
-        // tenta papéis exatos: "DEV" e "ROLE_DEV"
-        Set<String> roles = new HashSet<String>();
-        roles.add("DEV");
-        roles.add("ROLE_DEV");
+    private boolean adminExists() {
+        Set<String> roles = new HashSet<>();
+        roles.add("ADMIN");
+        roles.add("ROLE_ADMIN");
 
         try {
-            java.util.List<Long> ids = repo.findIdsByRoleInAndAtivoTrue(roles);
+            var ids = repo.findIdsByRoleInAndAtivoTrue(roles);
             if (ids != null && !ids.isEmpty()) return true;
-        } catch (Exception e) {
-            log.debug("findIdsByRoleInAndAtivoTrue falhou/indisponível: {}", e.getMessage());
-        }
+        } catch (Exception ignored) {}
 
-        // fallback: LIKE '%DEV%'
         try {
-            java.util.List<Long> like = repo.findIdsByRoleContainsAndAtivoTrue("DEV");
+            var like = repo.findIdsByRoleContainsAndAtivoTrue("ADMIN");
             return like != null && !like.isEmpty();
-        } catch (Exception e) {
-            log.debug("findIdsByRoleContainsAndAtivoTrue falhou/indisponível: {}", e.getMessage());
-        }
+        } catch (Exception ignored) {}
 
         return false;
     }
-
-    // ================= util =================
 
     private String opt(String key, String def) {
         String v = System.getenv(key);
@@ -116,13 +105,6 @@ public class BootstrapAdminConfig {
         if (v != null && !v.trim().isEmpty()) return v.trim();
 
         return def;
-    }
-
-    private String requireNumero(String appEnv, String key, String devDefault) {
-        String v = opt(key, null);
-        if (v != null && !v.trim().isEmpty()) return v.trim();
-        if (!"prod".equals(appEnv)) return devDefault;
-        throw new IllegalStateException("Defina " + key + " em PRODUÇÃO.");
     }
 
     private static boolean isBcrypt(String s) {
