@@ -27,8 +27,7 @@
 - [Níveis de Acesso](#-níveis-de-acesso)
 - [Capturas de Tela](#-capturas-de-tela)
 - [Roadmap](#️-roadmap)
-- [Contribuindo](#-contribuindo)
-- [Licença](#-licença)
+- [Licença e Uso](#️-licença-e-uso)
 - [Contato](#-contato)
 
 ---
@@ -36,6 +35,8 @@
 ## 📖 Sobre o Projeto
 
 O **Sistema de Gestão para Pousada** é uma aplicação full-stack desenvolvida para otimizar e automatizar a gestão completa de pousadas, desde o cadastro de quartos até o controle financeiro detalhado.
+
+> 🏨 **Sistema em Produção**: Este projeto está atualmente em uso na **Pousada do Brejo**, gerenciando operações reais do estabelecimento.
 
 ### Arquitetura
 O projeto utiliza uma **arquitetura REST API moderna**, onde:
@@ -159,7 +160,6 @@ Com foco em **segurança**, **auditoria** e **usabilidade**, o sistema oferece:
 ### DevOps
 - Docker Compose para orquestração
 - Git para versionamento
-- GitHub Actions (CI/CD - opcional)
 
 ---
 
@@ -302,6 +302,7 @@ Com foco em **segurança**, **auditoria** e **usabilidade**, o sistema oferece:
 
 O sistema utiliza uma **arquitetura REST API moderna** com separação clara entre Front-end e Back-end:
 
+
 ### Comunicação REST API
 - **Front-end** consome a API REST do Back-end via requisições HTTP
 - **WebSocket** para notificações em tempo real
@@ -310,6 +311,181 @@ O sistema utiliza uma **arquitetura REST API moderna** com separação clara ent
 
 ---
 
+
+## 📁 Estrutura de Pastas
+
+### Back-end (Spring Boot)
+```
+api-pousada/
+├── src/
+│   ├── main/
+│   │   ├── java/br/com/pousada/pousada/
+│   │   │   │
+│   │   │   ├── 🔐 auth/                    # Módulo de Autenticação
+│   │   │   │   ├── api/                    # AuthController
+│   │   │   │   ├── application/            # AuthService
+│   │   │   │   ├── domain/                 # Entidades de Auth
+│   │   │   │   ├── dtos/                   # LoginDTO, TokenDTO
+│   │   │   │   └── infra/                  # Repositórios
+│   │   │   │
+│   │   │   ├── ⚙️ config/                   # Configurações Globais
+│   │   │   │   ├── SecurityConfig.java
+│   │   │   │   ├── WebSocketConfig.java
+│   │   │   │   └── CorsConfig.java
+│   │   │   │
+│   │   │   ├── 📊 dashboard/               # Módulo Dashboard
+│   │   │   │   ├── api/                    # DashboardController
+│   │   │   │   ├── application/            # DashboardService
+│   │   │   │   └── dtos/                   # DashboardDTO
+│   │   │   │
+│   │   │   ├── ⚠️ exception/                # Tratamento de Exceções
+│   │   │   │   ├── GlobalExceptionHandler.java
+│   │   │   │   ├── ResourceNotFoundException.java
+│   │   │   │   └── BusinessException.java
+│   │   │   │
+│   │   │   ├── 💰 financeiro/              # Módulo Financeiro
+│   │   │   │   ├── api/                    # FinanceiroController
+│   │   │   │   ├── application/            # FinanceiroService
+│   │   │   │   ├── domain/                 # Entidade Financeiro
+│   │   │   │   ├── dtos/                   # FinanceiroDTO
+│   │   │   │   └── infra/                  # FinanceiroRepository
+│   │   │   │
+│   │   │   ├── 🛏️ hospedagens/              # Módulo Hospedagens
+│   │   │   │   ├── api/                    # HospedagemController
+│   │   │   │   ├── application/            # HospedagemService
+│   │   │   │   ├── domain/                 # Entidade Hospedagem
+│   │   │   │   ├── dtos/                   # HospedagemDTO
+│   │   │   │   └── infra/                  # HospedagemRepository
+│   │   │   │
+│   │   │   ├── 🔔 notificacoes/            # Módulo Notificações
+│   │   │   │   ├── api/                    # NotificacaoController
+│   │   │   │   ├── application/            # NotificacaoService
+│   │   │   │   ├── domain/                 # Entidade Notificacao
+│   │   │   │   ├── dtos/                   # NotificacaoDTO
+│   │   │   │   └── infra/                  # NotificacaoRepository
+│   │   │   │
+│   │   │   ├── 🏠 quartos/                 # Módulo Quartos
+│   │   │   │   ├── api/                    # QuartoController
+│   │   │   │   ├── application/            # QuartoService
+│   │   │   │   ├── domain/                 # Entidade Quarto
+│   │   │   │   ├── dtos/                   # QuartoDTO
+│   │   │   │   └── infra/                  # QuartoRepository
+│   │   │   │
+│   │   │   ├── 📄 reporting/               # Módulo Relatórios (PDF)
+│   │   │   │   ├── api/                    # ReportController
+│   │   │   │   ├── application/            # ReportService
+│   │   │   │   └── templates/              # Templates Thymeleaf
+│   │   │   │
+│   │   │   ├── 📅 reservas/                # Módulo Reservas
+│   │   │   │   ├── api/                    # ReservaController
+│   │   │   │   ├── application/            # ReservaService
+│   │   │   │   ├── domain/                 # Entidade Reserva
+│   │   │   │   ├── dtos/                   # ReservaDTO
+│   │   │   │   └── infra/                  # ReservaRepository
+│   │   │   │
+│   │   │   ├── 🛡️ security/                 # Módulo de Segurança
+│   │   │   │   ├── AuthPrincipal.java
+│   │   │   │   ├── JwtFilter.java
+│   │   │   │   ├── JwtTokenService.java
+│   │   │   │   ├── JwtUtil.java
+│   │   │   │   ├── SecurityConfig.java
+│   │   │   │   ├── SecurityUtils.java
+│   │   │   │   └── WebSocketAuthInterceptor.java
+│   │   │   │
+│   │   │   ├── 👥 usuarios/                # Módulo Usuários
+│   │   │   │   ├── api/                    # UsuarioController
+│   │   │   │   ├── application/            # UsuarioService
+│   │   │   │   ├── domain/                 # Entidade Usuario
+│   │   │   │   ├── dtos/                   # UsuarioDTO
+│   │   │   │   ├── infra/                  # UsuarioRepository
+│   │   │   │   └── jobs/                   # Tarefas agendadas
+│   │   │   │
+│   │   │   └── 🔧 util/                    # Utilitários
+│   │   │       └── PousadaApplication.java
+│   │   │
+│   │   └── resources/
+│   │       ├── application.properties       # Configurações
+│   │       ├── application-dev.properties
+│   │       ├── application-prod.properties
+│   │       └── templates/                   # Templates PDF
+│   │
+│   └── test/                                # Testes
+│
+├── pom.xml                                  # Dependências Maven
+├── Dockerfile
+└── docker-compose.yml
+```
+
+### Front-end (Angular 19)
+```
+pousada-frontend/
+├── src/
+│   ├── app/
+│   │   │
+│   │   ├── 📱 components/                   # Componentes Reutilizáveis
+│   │   │   ├── account/                    # Componente de Conta
+│   │   │   ├── navbar/                     # Barra de Navegação
+│   │   │   ├── notifications/              # Painel de Notificações
+│   │   │   ├── perfil/                     # Perfil do Usuário
+│   │   │   └── senha-negado/               # Forçar Troca de Senha
+│   │   │
+│   │   ├── 🔧 core/                         # Núcleo da Aplicação
+│   │   │   ├── guards/                     # Guards de Rota
+│   │   │   │   ├── auth.guard.ts           # Proteção de autenticação
+│   │   │   │   └── role.guard.ts           # Proteção por role
+│   │   │   │
+│   │   │   ├── interceptors/               # Interceptors HTTP
+│   │   │   │   ├── token.interceptor.ts    # Injeção de JWT
+│   │   │   │   └── error.interceptor.ts    # Tratamento de erros
+│   │   │   │
+│   │   │   └── services/                   # Serviços Globais
+│   │   │       ├── api.service.ts
+│   │   │       ├── auth.service.ts
+│   │   │       ├── websocket.service.ts
+│   │   │       └── notification.service.ts
+│   │   │
+│   │   ├── 📄 pages/                        # Páginas (Feature Modules)
+│   │   │   ├── acesso-negado/              # Página de Acesso Negado
+│   │   │   ├── dashboard/                  # Dashboard Principal
+│   │   │   ├── financeiro/                 # Gestão Financeira
+│   │   │   ├── hospedagens/                # Gestão de Hospedagens
+│   │   │   ├── login/                      # Página de Login
+│   │   │   ├── pagina-nao-encontrada/      # 404 Not Found
+│   │   │   ├── quartos/                    # Gestão de Quartos
+│   │   │   ├── relatorios/                 # Relatórios e Comprovantes
+│   │   │   ├── reservas/                   # Gestão de Reservas
+│   │   │   ├── user-menu/                  # Menu do Usuário
+│   │   │   └── users/                      # Gestão de Usuários
+│   │   │
+│   │   ├── 🔗 shared/                       # Módulos Compartilhados
+│   │   │   ├── models/                     # Interfaces TypeScript
+│   │   │   ├── pipes/                      # Pipes customizados
+│   │   │   └── directives/                 # Diretivas customizadas
+│   │   │
+│   │   ├── app.component.ts                # Componente Raiz
+│   │   ├── app.component.html
+│   │   ├── app.component.css
+│   │   ├── app.config.ts                   # Configurações
+│   │   └── app.routes.ts                   # Rotas
+│   │
+│   ├── assets/                              # Recursos Estáticos
+│   │   ├── images/
+│   │   └── icons/
+│   │
+│   ├── environments/                        # Ambientes
+│   │   ├── environment.ts                  # Desenvolvimento
+│   │   └── environment.prod.ts             # Produção
+│   │
+│   ├── index.html
+│   ├── main.ts                              # Entry Point
+│   └── styles.css                           # Estilos Globais
+│
+├── package.json
+├── tailwind.config.js                       # Configuração Tailwind
+├── angular.json                             # Configuração Angular
+├── tsconfig.json                            # Configuração TypeScript
+└── Dockerfile
+```
 
 ### Organização por Camadas (Padrão de cada módulo Back-end)
 
@@ -349,21 +525,29 @@ Cliente → Controller (api/) → Service (application/) → Repository (infra/)
 
 ## 📸 Capturas de Tela
 
-> **Nota**: Adicione aqui prints da sua aplicação
+### 🔐 Login
+![Tela de Login](./img/login.png)
 
-```markdown
-### Login
-![Login](./docs/screenshots/login.png)
+### 📊 Dashboard
+![Dashboard Principal](./img/daashboard.png)
 
-### Dashboard
-![Dashboard](./docs/screenshots/dashboard.png)
+### 🛏️ Gestão de Hospedagens
+![Gestão de Hospedagens](./img/hospedagens.png)
 
-### Gestão de Quartos
-![Quartos](./docs/screenshots/rooms.png)
+### 🏠 Gestão de Quartos
+![Gestão de Quartos](./img/quartos.png)
 
-### Relatórios
-![Relatórios](./docs/screenshots/reports.png)
-```
+### 💰 Módulo Financeiro
+![Módulo Financeiro](./img/financeiro.png)
+
+### 📅 Gestão de Reservas
+![Gestão de Reservas](./img/reservas.png)
+
+### 👥 Gestão de Usuários
+![Gestão de Usuários](./img/usuarios.png)
+
+### 📄 Relatórios
+![Relatórios](./img/relatorios.png)
 
 ---
 
@@ -415,6 +599,30 @@ Cliente → Controller (api/) → Service (application/) → Repository (infra/)
   - [ ] Relatórios de auditoria por usuário
   - [ ] Dashboard de atividades suspeitas
 
+### 💡 Ideias Futuras
+- [ ] Integração com gateways de pagamento (Stripe, PayPal, Mercado Pago)
+- [ ] Integração com canais de venda (Booking.com, Airbnb)
+- [ ] Sistema de avaliações de hóspedes
+- [ ] Gestão de estoque e manutenção
+- [ ] Sistema de fidelidade e cupons de desconto
+- [ ] Chatbot para atendimento automático
+- [ ] Análise de dados com Machine Learning
+
+---
+
+## ⚖️ Licença e Uso
+
+**⚠️ AVISO IMPORTANTE**
+
+Este é um **sistema proprietário** desenvolvido especificamente para uso interno da **Pousada do Brejo**. 
+
+- ❌ **Não é permitida** a cópia, redistribuição ou uso comercial deste código
+- ❌ **Não é permitido** criar trabalhos derivados sem autorização expressa
+- ℹ️ O código está disponível publicamente apenas para **fins de portfólio e demonstração**
+- 📧 Para consultas sobre licenciamento ou uso, entre em contato com o autor
+
+**Todos os direitos reservados © 2024 Marcos Gabriel**
+
 ---
 
 ## 👤 Autor
@@ -440,3 +648,11 @@ Veja o sistema em funcionamento:
 **Link direto**: [https://youtu.be/cxnlDaoNQe8](https://youtu.be/cxnlDaoNQe8)
 
 ---
+
+<div align="center">
+
+**⭐ Se este projeto foi útil para você, considere dar uma estrela no repositório!**
+
+Made with ❤️ by [Marcos Gabriel](https://github.com/Marcos-Gabriell)
+
+</div>
