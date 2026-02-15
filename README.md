@@ -1,37 +1,5 @@
 # 🏨 Sistema de Gestão para Pousada (Pousada do Brejo)
 
-<div align="center">
-
-![GitHub repo size](https://img.shields.io/github/repo-size/Marcos-Gabriell/sistema-pousada)
-![GitHub language count](https://img.shields.io/github/languages/count/Marcos-Gabriell/sistema-pousada)
-![GitHub stars](https://img.shields.io/github/stars/Marcos-Gabriell/sistema-pousada)
-![GitHub forks](https://img.shields.io/github/forks/Marcos-Gabriell/sistema-pousada)
-
-**Sistema completo de gestão interna para pousadas, cobrindo o fluxo operacional, administrativo e financeiro.**
-
-[📺 Ver Demonstração](https://youtu.be/cxnlDaoNQe8) • [🐛 Reportar Bug](https://github.com/Marcos-Gabriell/sistema-pousada/issues) • [✨ Solicitar Feature](https://github.com/Marcos-Gabriell/sistema-pousada/issues)
-
-</div>
-
----
-
-## 📋 Índice
-
-- [Sobre o Projeto](#-sobre-o-projeto)
-- [Principais Destaques](#-principais-destaques)
-- [Tecnologias Utilizadas](#-tecnologias-utilizadas)
-- [Módulos e Funcionalidades](#-módulos-e-funcionalidades)
-- [Arquitetura do Sistema](#-arquitetura-do-sistema)
-- [Como Rodar o Projeto](#️-como-rodar-o-projeto)
-- [Estrutura de Pastas](#-estrutura-de-pastas)
-- [Níveis de Acesso](#-níveis-de-acesso)
-- [Capturas de Tela](#-capturas-de-tela)
-- [Roadmap](#️-roadmap)
-- [Licença e Uso](#️-licença-e-uso)
-- [Contato](#-contato)
-
----
-
 ## 📖 Sobre o Projeto
 
 O **Sistema de Gestão para Pousada** é uma aplicação full-stack desenvolvida para otimizar e automatizar a gestão completa de pousadas, desde o cadastro de quartos até o controle financeiro detalhado.
@@ -610,21 +578,6 @@ Cliente → Controller (api/) → Service (application/) → Repository (infra/)
 
 ---
 
-## ⚖️ Licença e Uso
-
-**⚠️ AVISO IMPORTANTE**
-
-Este é um **sistema proprietário** desenvolvido especificamente para uso interno da **Pousada do Brejo**. 
-
-- ❌ **Não é permitida** a cópia, redistribuição ou uso comercial deste código
-- ❌ **Não é permitido** criar trabalhos derivados sem autorização expressa
-- ℹ️ O código está disponível publicamente apenas para **fins de portfólio e demonstração**
-- 📧 Para consultas sobre licenciamento ou uso, entre em contato com o autor
-
-**Todos os direitos reservados © 2024 Marcos Gabriel**
-
----
-
 ## 👤 Autor
 
 <div align="center">
@@ -649,10 +602,3 @@ Veja o sistema em funcionamento:
 
 ---
 
-<div align="center">
-
-**⭐ Se este projeto foi útil para você, considere dar uma estrela no repositório!**
-
-Made with ❤️ by [Marcos Gabriel](https://github.com/Marcos-Gabriell)
-
-</div>
