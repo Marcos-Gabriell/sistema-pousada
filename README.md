@@ -1,10 +1,10 @@
-# 🏨 Sistema de Gestão para Pousada (Pousada do Brejo)
+# 🏨 Sistema de Gestão para Pousada
 
 ## 📖 Sobre o Projeto
 
 O **Sistema de Gestão para Pousada** é uma aplicação full-stack desenvolvida para otimizar e automatizar a gestão completa de pousadas, desde o cadastro de quartos até o controle financeiro detalhado.
 
-> 🏨 **Sistema em Produção**: Este projeto está atualmente em uso na **Pousada do Brejo**, gerenciando operações reais do estabelecimento.
+> 🏨 **Sistema em Produção**: Este projeto está atualmente em uso por uma pousada, gerenciando operações reais do estabelecimento.
 
 ### Arquitetura
 O projeto utiliza uma **arquitetura REST API moderna**, onde:
