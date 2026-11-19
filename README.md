@@ -264,6 +264,23 @@ Com foco em **segurança**, **auditoria** e **usabilidade**, o sistema oferece:
 
 ---
 
+## ⚙️ Como rodar localmente
+
+As credenciais não ficam no código: a API lê tudo de variáveis de ambiente.
+
+```bash
+cd api-pousada
+cp .env.example .env              # preencha DB_PASSWORD e JWT_SECRET
+openssl rand -base64 64           # gera um valor para JWT_SECRET
+docker compose up -d --build
+```
+
+| Variável | Para que serve |
+|---|---|
+| `JWT_SECRET` | Chave de assinatura dos tokens JWT (obrigatória) |
+| `DB_USERNAME` / `DB_PASSWORD` | Usuário e senha do PostgreSQL |
+| `APP_ENV` | `dev` ou `prod`; em `prod` o admin inicial exige `ADMIN_INIT_PASSWORD_BCRYPT` |
+
 ## 🏗️ Arquitetura do Sistema
 
 ### Arquitetura REST API

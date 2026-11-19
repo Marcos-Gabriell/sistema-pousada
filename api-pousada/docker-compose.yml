@@ -6,8 +6,8 @@ services:
     container_name: pousada_postgres
     environment:
       POSTGRES_DB: pousada
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       # 🔽 garantimos fuso dentro do container do Postgres
       TZ: America/Sao_Paulo
       PGTZ: America/Sao_Paulo
@@ -29,8 +29,11 @@ services:
 
       # 🔽 datasource apontando pro container do postgres
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pousada
-      SPRING_DATASOURCE_USERNAME: admin
-      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+
+      # 🔽 chave do JWT vem do arquivo .env (nunca versionar)
+      JWT_SECRET: ${JWT_SECRET}
 
       # 🔽 se for ambiente de dev, pode ser create / update
       # usa a forma que o Spring entende em env-var
